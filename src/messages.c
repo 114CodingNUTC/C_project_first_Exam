@@ -1,5 +1,5 @@
-#include "messages.h"
-#include "config.h"
+#include "../include/messages.h"
+#include "../include/config.h"
 
 typedef struct MessagePair {
   int key;

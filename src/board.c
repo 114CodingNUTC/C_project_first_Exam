@@ -1,4 +1,4 @@
-#include "config.h"
+#include "../include/config.h"
 
 static int clamp_board_size(int board_size) {
   if (board_size <= 0)

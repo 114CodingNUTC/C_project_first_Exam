@@ -1,4 +1,4 @@
-#include "config.h"
+#include "../include/config.h"
 #include <stdlib.h>
 
 static int test_position_win(const GomokuGame *game, int player, int row,

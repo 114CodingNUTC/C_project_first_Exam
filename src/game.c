@@ -1,6 +1,6 @@
-#include "config.h"
-#include "events.h"
-#include "messages.h"
+#include "../include/config.h"
+#include "../include/events.h"
+#include "../include/messages.h"
 #include <conio.h>
 #include <stdio.h>
 #include <stdlib.h>

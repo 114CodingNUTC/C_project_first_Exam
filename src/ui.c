@@ -1,5 +1,5 @@
-#include "config.h"
-#include "messages.h"
+#include "../include/config.h"
+#include "../include/messages.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h>

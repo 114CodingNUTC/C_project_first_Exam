@@ -1,4 +1,4 @@
-#include "config.h"
+#include "../include/config.h"
 #include <stdlib.h>
 
 static int count_line(const GomokuGame *game, int row, int col, int player,
@@ -82,7 +82,7 @@ static int eval_position(const GomokuGame *game, int row, int col, int player) {
 
 static int
 evaluate_board(const GomokuGame *game,
-               const int candidates[CFG_MAX_BOARD_SIZE][CFG_MAX_BOARD_SIZE]) {
+               int candidates[CFG_MAX_BOARD_SIZE][CFG_MAX_BOARD_SIZE]) {
   int row;
   int col;
   int score;

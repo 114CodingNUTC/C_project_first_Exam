@@ -1,4 +1,4 @@
-#include "config.h"
+#include "../include/config.h"
 
 static int count_direction(const GomokuGame *game, int row, int col, int dr,
                            int dc, int player, int line[CFG_WIN_STREAK][2],
