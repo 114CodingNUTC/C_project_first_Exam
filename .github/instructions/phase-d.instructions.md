@@ -24,6 +24,7 @@ applyTo: "src/ai_easy.c, src/ai_medium.c, src/ai_hard.c, src/game.c"
 - `src/board.c`
 - `src/rules.c`
 - `src/messages.c`
+- `tests/test_phase_d.c`、`tests/test_phase_d.exe`（測試檔案）
 - `README.MD`（僅限同步 AI 難度與行為）
 
 ## 實作硬規則

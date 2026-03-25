@@ -22,6 +22,7 @@ applyTo: "src/input.c, src/ui.c, src/main.c, include/messages.h"
 - `src/game.c`
 - `src/main.c`
 - `src/messages.c`
+- `tests/test_phase_c.c`、`tests/test_phase_c.exe`（測試檔案）
 - `README.MD`（僅限同步操作與 UI 規範）
 
 ## 實作硬規則

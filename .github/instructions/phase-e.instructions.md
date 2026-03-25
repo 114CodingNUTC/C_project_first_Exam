@@ -21,6 +21,7 @@ applyTo: "src/main.c, src/game.c, src/input.c, include/events.h"
 - `src/input.c`
 - `src/ui.c`
 - `src/messages.c`
+- `tests/test_phase_e.c`、`tests/test_phase_e.exe`（測試檔案）
 - `README.MD`（僅限同步流程與狀態機）
 
 ## 實作硬規則

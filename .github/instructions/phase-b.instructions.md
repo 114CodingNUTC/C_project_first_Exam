@@ -21,6 +21,7 @@ applyTo: "src/board.c, src/rules.c, src/game.c, include/events.h, include/config
 - `src/game.c`
 - `src/main.c`
 - `src/messages.c`
+- `tests/test_phase_b.c`、`tests/test_phase_b.exe`（測試檔案）
 - `README.MD`（僅限同步 Phase B 規則與事件）
 
 ## 實作硬規則

@@ -25,6 +25,7 @@ applyTo: "src/**, include/**, README.MD"
 - `src/ai_easy.c`
 - `src/ai_medium.c`
 - `src/ai_hard.c`
+- `tests/test_phase_a.c`、`tests/test_phase_a.exe`（測試檔案）
 - `README.MD`（僅限同步 Phase A 文件）
 
 ## 實作硬規則

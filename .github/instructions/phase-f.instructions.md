@@ -28,6 +28,7 @@ applyTo: "README.MD, src/**, include/**"
 - `src/input.c`
 - `src/ui.c`
 - `src/ai_easy.c`
+- `tests/test_phase_*.c`、`tests/test_phase_*.exe`（所有測試檔案）
 - `src/ai_medium.c`
 - `src/ai_hard.c`
 
