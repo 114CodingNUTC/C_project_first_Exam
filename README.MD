@@ -22,6 +22,11 @@
    - 文字輸入解析（`a,1` / `a1` / `1a`）
    - 方向鍵移動游標 + Enter 落子
    - 訊息槽提示與錯誤顯示（含錯誤紅字）
+- ✓ 已完成 Phase D AI 實現：
+   - **簡單難度**：隨機選擇合法位置
+   - **中等難度**：防守優先 + 基礎進攻（檢查對手連4防守，檢查自己連4進攻，優先靠近棋子位置）
+   - **困難難度**：Minimax + Alpha-Beta 修剪 + 候選點縮減（搜索深度 5，主要考慮棋盤活躍區域）
+   - 所有 AI 難度都走統一的 `try_place_stone()` 落子 API
 - 規格與分工主文件：`PLAN.md`。
 
 ## 預定目錄（依 PLAN）
@@ -44,8 +49,13 @@
 
 ### GCC（MinGW）
 ```bash
-gcc -o game.exe src/*.c -Iinclude
+# Windows PowerShell (需要完整文件列表)
+gcc -o game.exe src/main.c src/game.c src/board.c src/rules.c src/input.c src/ui.c src/messages.c src/ai_easy.c src/ai_medium.c src/ai_hard.c -Iinclude
 game.exe
+
+# Linux/macOS 或 Bash
+gcc -o game.exe src/*.c -Iinclude
+./game.exe
 ```
 
 > 若尚未建立 `include/` 或完整 `src/*.c`，請先依 `PLAN.md` 的 Phase A 建立骨架。
@@ -120,6 +130,39 @@ int try_place_stone(
 - ✓ 遊戲狀態鎖定（勝利後禁止落子）
 - ✓ 狀態複位功能
 - ✓ 和局判定
+
+## Phase D AI 實現動作（目前可用）
+
+### AI 難度對比
+
+| 難度 | 策略 | 搜索範圍 | 特點 |
+|------|------|---------|------|
+| 簡單 | 隨機選擇 | 全盤 | 速度快，行為不可預測 |
+| 中等 | 防守優先 + 進攻 | 活躍區域 | 能防守對手連4，能進攻自己連4，優先靠近棋子 |
+| 困難 | Minimax + Alpha-Beta | 活躍區域 + 候選縮減 | 搜索深度 5，評估所有可能着法，採用Alpha-Beta修剪加速 |
+
+### 實現細節
+- **ai_easy.c**：
+  - 收集所有空位，用 `rand()` 隨機選擇一個
+  
+- **ai_medium.c**：
+  - 先檢查對手是否有連4位置（防守優先）
+  - 再檢查自己是否有連4位置（能立即贏）
+  - 若無，優先選擇距離現有棋子為 2 格以內的位置（靠近棋子）
+  - 最後才選擇任意空位
+  
+- **ai_hard.c**：
+  - 使用 Minimax 算法搜索（深度 5）
+  - Alpha-Beta 修剪加速搜索
+  - 只考慮距現有棋子 2 格以內的候選位置（候選縮減）
+  - 評估函數：計算雙方連子數（連5=無限分、連4=10000、連3=1000 等）
+  - 棋盤空空時，預設先在中心落子
+
+### AI 測試驗收
+已通過 Phase D 測試套件，涵蓋：
+- ✓ 簡單難度：隨機選擇所有位置（可驗證多次調用不同結果）
+- ✓ 中等難度：防守對手連4、進攻自己連4、靠近棋子策略
+- ✓ 困難難度：Minimax 尋找即時贏着、策略選擇、防守威脅
 
 ## Phase C 操作方式（目前可用）
 - 啟動後先選擇遊戲模式，再選擇棋盤大小。

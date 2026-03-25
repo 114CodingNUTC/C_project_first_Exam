@@ -3,6 +3,8 @@
 #include "messages.h"
 #include <conio.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 #include <windows.h>
 
 static long long now_ms(void) { return GetTickCount64(); }
@@ -125,6 +127,8 @@ void game_run_loop(int mode, int board_size, int lang) {
   int event_code;
   int msg_key;
   int player;
+
+  srand((unsigned int)time(0));
 
   game_reset(&game, board_size);
   ui_init_state(&ui_state, board_size);
