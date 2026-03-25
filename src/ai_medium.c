@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 static int test_position_win(const GomokuGame *game, int player, int row,
-                             int col, int out_line[5][2]) {
+                             int col, int out_line[CFG_WIN_STREAK][2]) {
   int count;
 
   if (!board_is_empty(game, row, col))
@@ -15,7 +15,7 @@ static int find_critical_move(const GomokuGame *game, int *out_row,
                               int *out_col, int player) {
   int row;
   int col;
-  int out_line[5][2];
+  int out_line[CFG_WIN_STREAK][2];
 
   for (row = 0; row < game->board_size; row++) {
     for (col = 0; col < game->board_size; col++) {
@@ -81,7 +81,7 @@ int ai_medium_pick_move(const GomokuGame *game, int *out_row, int *out_col) {
     return 1;
 
   /* Step 3: Pick position near existing stones */
-  range = 2; /* Search within distance 2 */
+  range = CFG_AI_MEDIUM_NEAR_RANGE;
   for (row = 0; row < game->board_size; row++) {
     for (col = 0; col < game->board_size; col++) {
       if (board_is_empty(game, row, col) &&

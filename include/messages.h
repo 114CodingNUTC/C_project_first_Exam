@@ -39,6 +39,18 @@
 #define MSG_EXIT_CANCELLED 47
 #define MSG_RETURN_MAIN_MENU 48
 
+#define MSG_INPUT_RANGE_HINT 49
+#define MSG_PRESS_ANY_KEY_BACK_MENU 50
+#define MSG_TRACE_EVENT_FMT 51
+
+#define MSG_UI_TITLE_FMT 60
+#define MSG_UI_STATUS_BLACK_FMT 61
+#define MSG_UI_STATUS_WHITE_FMT 62
+#define MSG_UI_INPUT_LABEL 63
+#define MSG_UI_SLOT_LABEL_FMT 64
+#define MSG_UI_MSG_LABEL_FMT 65
+#define MSG_BOARD_TITLE_FMT 66
+
 const char *msg_get(int lang, int key);
 
 #endif

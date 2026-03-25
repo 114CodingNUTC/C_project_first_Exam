@@ -1,8 +1,8 @@
 #include "config.h"
 
 static int count_direction(const GomokuGame *game, int row, int col, int dr,
-                           int dc, int player, int line[5][2], int *index,
-                           int write_forward) {
+                           int dc, int player, int line[CFG_WIN_STREAK][2],
+                           int *index, int write_forward) {
   int r;
   int c;
   int count;
@@ -11,7 +11,7 @@ static int count_direction(const GomokuGame *game, int row, int col, int dr,
   r = row + dr;
   c = col + dc;
   while (board_is_in_bounds(game, r, c) && game->board[r][c] == player) {
-    if (*index < 5 && write_forward) {
+    if (*index < CFG_WIN_STREAK && write_forward) {
       line[*index][0] = r;
       line[*index][1] = c;
       (*index)++;
@@ -24,7 +24,7 @@ static int count_direction(const GomokuGame *game, int row, int col, int dr,
 }
 
 int rules_check_win(const GomokuGame *game, int row, int col, int player,
-                    int out_line[5][2], int *out_count) {
+                    int out_line[CFG_WIN_STREAK][2], int *out_count) {
   const int dirs[4][2] = {{1, 0}, {0, 1}, {1, 1}, {1, -1}};
   int i;
 
@@ -48,15 +48,15 @@ int rules_check_win(const GomokuGame *game, int row, int col, int player,
         count_direction(game, row, col, dr, dc, player, out_line, out_count, 0);
     total = 1 + back + forward;
 
-    if (total >= 5) {
+    if (total >= CFG_WIN_STREAK) {
       int k;
       start_r = row - back * dr;
       start_c = col - back * dc;
-      for (k = 0; k < 5; k++) {
+      for (k = 0; k < CFG_WIN_STREAK; k++) {
         out_line[k][0] = start_r + k * dr;
         out_line[k][1] = start_c + k * dc;
       }
-      *out_count = 5;
+      *out_count = CFG_WIN_STREAK;
       return 1;
     }
   }

@@ -44,7 +44,20 @@ static const MessagePair k_messages[] = {
     {MSG_CONFIRM_EXIT, "確定要退出？(1=是, 2=否)",
      "Confirm exit? (1=Yes, 2=No)"},
     {MSG_EXIT_CANCELLED, "已取消退出", "Exit cancelled"},
-    {MSG_RETURN_MAIN_MENU, "返回主選單", "Return to main menu"}};
+    {MSG_RETURN_MAIN_MENU, "返回主選單", "Return to main menu"},
+    {MSG_INPUT_RANGE_HINT, "請輸入 %d-%d", "Please enter %d-%d"},
+    {MSG_PRESS_ANY_KEY_BACK_MENU, "按任意鍵返回主選單...",
+     "Press any key to return to main menu..."},
+    {MSG_TRACE_EVENT_FMT, "[追蹤] EV=%d", "[TRACE] EV=%d"},
+    {MSG_UI_TITLE_FMT, "=== 五子棋 %dx%d ===", "=== Gomoku %dx%d ==="},
+    {MSG_UI_STATUS_BLACK_FMT, "目前: 黑子(X) | 步數: %d",
+     "Current: Black(X) | Moves: %d"},
+    {MSG_UI_STATUS_WHITE_FMT, "目前: 白子(O) | 步數: %d",
+     "Current: White(O) | Moves: %d"},
+    {MSG_UI_INPUT_LABEL, "[輸入] > ", "[INPUT] > "},
+    {MSG_UI_SLOT_LABEL_FMT, "[提示區] %s", "[SLOT] %s"},
+    {MSG_UI_MSG_LABEL_FMT, "[訊息] %s", "[MSG] %s"},
+    {MSG_BOARD_TITLE_FMT, "棋盤 %dx%d", "Board %dx%d"}};
 
 const char *msg_get(int lang, int key) {
   int i;

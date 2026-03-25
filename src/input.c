@@ -138,17 +138,28 @@ static void input_clear(UIState *ui_state) {
   ui_state->board_dirty = 1;
 }
 
-static int read_number_in_range(int min_value, int max_value) {
-  char buf[32];
+static int read_number_in_range(int min_value, int max_value, int lang) {
+  int key;
   int value;
 
   while (1) {
-    if (fgets(buf, sizeof(buf), stdin) == 0)
+    key = _getch();
+
+    if (key == CFG_KEY_CTRL_C)
+      ExitProcess(0);
+
+    if (!isdigit((unsigned char)key))
       continue;
-    value = atoi(buf);
-    if (value >= min_value && value <= max_value)
+
+    value = key - '0';
+    if (value >= min_value && value <= max_value) {
+      printf("%d\n", value);
       return value;
-    printf("請輸入 %d-%d\n", min_value, max_value);
+    }
+
+    printf(msg_get(lang, MSG_INPUT_RANGE_HINT), min_value, max_value);
+    printf("\n");
+    printf("> ");
   }
 }
 
@@ -159,7 +170,7 @@ int input_choose_mode(int lang) {
   printf("3) %s\n", msg_get(lang, MSG_MODE_1V_AI_MEDIUM));
   printf("4) %s\n", msg_get(lang, MSG_MODE_1V_AI_HARD));
   printf("> ");
-  return read_number_in_range(1, 4);
+  return read_number_in_range(1, 4, lang);
 }
 
 int input_choose_board_size(int lang) {
@@ -169,7 +180,7 @@ int input_choose_board_size(int lang) {
   printf("3) %s\n", msg_get(lang, MSG_BOARD_19X19));
   printf("> ");
 
-  switch (read_number_in_range(1, 3)) {
+  switch (read_number_in_range(1, 3, lang)) {
   case 1:
     return CFG_BOARD_SIZE_9;
   case 2:
@@ -186,13 +197,13 @@ int input_choose_pause_action(int lang) {
   printf("3) %s\n", msg_get(lang, MSG_PAUSE_MAIN_MENU));
   printf("4) %s\n", msg_get(lang, MSG_PAUSE_EXIT));
   printf("> ");
-  return read_number_in_range(1, 4);
+  return read_number_in_range(1, 4, lang);
 }
 
 int input_confirm_exit(int lang) {
   printf("%s\n", msg_get(lang, MSG_CONFIRM_EXIT));
   printf("> ");
-  return read_number_in_range(1, 2) == 1;
+  return read_number_in_range(1, 2, lang) == 1;
 }
 
 int input_read_player_move(const GomokuGame *game, UIState *ui_state,
@@ -205,13 +216,13 @@ int input_read_player_move(const GomokuGame *game, UIState *ui_state,
     ui_render_full(game, ui_state, LANG_DEFAULT);
     key = _getch();
 
-    if (key == 3)
+    if (key == CFG_KEY_CTRL_C)
       ExitProcess(0);
 
-    if (key == 27)
+    if (key == CFG_KEY_ESC)
       return 0;
 
-    if (key == 13) {
+    if (key == CFG_KEY_ENTER) {
       if (ui_state->input_length > 0) {
         if (input_parse_move(ui_state->input_text, game->board_size, out_row,
                              out_col)) {
@@ -229,31 +240,31 @@ int input_read_player_move(const GomokuGame *game, UIState *ui_state,
       return 1;
     }
 
-    if (key == 8) {
+    if (key == CFG_KEY_BACKSPACE) {
       input_pop_char(ui_state);
       continue;
     }
 
-    if (key == 0 || key == 224) {
+    if (key == CFG_KEY_EXTENDED_0 || key == CFG_KEY_EXTENDED_224) {
       ext = _getch();
-      if (ext == 83) {
+      if (ext == CFG_KEY_DELETE) {
         input_delete_char(ui_state);
         continue;
       }
-      if (ext == 72) {
+      if (ext == CFG_KEY_UP) {
         ui_move_cursor(ui_state, ui_state->cursor_row - 1, ui_state->cursor_col,
                        game->board_size);
-      } else if (ext == 80) {
+      } else if (ext == CFG_KEY_DOWN) {
         ui_move_cursor(ui_state, ui_state->cursor_row + 1, ui_state->cursor_col,
                        game->board_size);
-      } else if (ext == 75) {
+      } else if (ext == CFG_KEY_LEFT) {
         if (ui_state->input_length > 0) {
           input_move_left(ui_state);
         } else {
           ui_move_cursor(ui_state, ui_state->cursor_row,
                          ui_state->cursor_col - 1, game->board_size);
         }
-      } else if (ext == 77) {
+      } else if (ext == CFG_KEY_RIGHT) {
         if (ui_state->input_length > 0) {
           input_move_right(ui_state);
         } else {

@@ -32,6 +32,11 @@
    - ESC 進入暫停選單（繼續 / 重開 / 回主選單 / 退出確認）
    - 狀態機：`InGame / Paused / ConfirmExit / MainMenu`
    - 事件追蹤輸出（EV_READY / EV_STONE_PLACED / EV_WIN / EV_DRAW / EV_PAUSED / EV_EXIT_*）
+- ✓ 已完成 Phase F 驗證與文件（第一版）：
+   - 功能矩陣驗證（模式 × 棋盤大小 × 輸入格式 × AI 難度）
+   - smoke 驗證（勝利 / 和局 / 非法落子）
+   - 三中心檢查（config / messages / events）
+   - README 與測試流程同步更新
 - 規格與分工主文件：`PLAN.md`。
 
 ## 預定目錄（依 PLAN）
@@ -192,6 +197,34 @@ int try_place_stone(
 - `[TRACE] EV=130`（EV_WIN）
 - `[TRACE] EV=160`（EV_PAUSED）
 - `[TRACE] EV=220`（EV_EXIT_APP）
+
+## Phase F 驗證與文件（目前可用）
+
+### 驗證矩陣摘要
+- 模式：`1v1 / 1vAI(Easy/Medium/Hard)`
+- 棋盤：`9x9 / 15x15 / 19x19`
+- 輸入：`a1 / 1a / a,1`
+- AI：`easy / medium / hard`（合法座標輸出驗證）
+
+### smoke 驗證
+- 勝利：連五觸發 `EV_WIN`
+- 和局：滿盤觸發 `EV_DRAW`
+- 非法落子：越界觸發 `EV_INVALID_MOVE`
+
+### 反硬編碼檢查摘要
+- `events.h`：事件碼唯一性檢查
+- `messages.h/messages.c`：文案鍵值唯一性與映射完整性檢查（中/英）
+- `config.h`：棋盤大小與輸入/訊息設定值合理性檢查
+
+### Phase F 測試執行
+```bash
+gcc -o tests/test_phase_f.exe tests/test_phase_f.c src/game.c src/board.c src/rules.c src/messages.c src/ui.c src/input.c src/ai_easy.c src/ai_medium.c src/ai_hard.c -Iinclude
+./tests/test_phase_f.exe
+```
+
+### UI 穩定性已知限制
+- 目前採用 ANSI 清屏序列（`ESC[3J ESC[2J ESC[H]`），需終端支援 ANSI 控制碼。
+- 在標準 Windows Terminal / VS Code Terminal 表現正常；若終端禁用 ANSI，需改回 WinAPI 清屏策略。
 
 ## Phase C 操作方式（目前可用）
 - 啟動後先選擇遊戲模式，再選擇棋盤大小。

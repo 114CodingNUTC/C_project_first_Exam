@@ -52,6 +52,29 @@ int ui_message_expired(const UIState *state, long long current_ms) {
 
 static long long get_current_ms(void) { return GetTickCount64(); }
 
+static void ui_clear_console(void) {
+  HANDLE console;
+  CONSOLE_SCREEN_BUFFER_INFO csbi;
+  COORD home;
+  DWORD length;
+  DWORD written;
+
+  console = GetStdHandle(STD_OUTPUT_HANDLE);
+  if (console == INVALID_HANDLE_VALUE || console == 0)
+    return;
+
+  if (!GetConsoleScreenBufferInfo(console, &csbi))
+    return;
+
+  length = (DWORD)(csbi.dwSize.X * csbi.dwSize.Y);
+  home.X = 0;
+  home.Y = 0;
+
+  FillConsoleOutputCharacter(console, ' ', length, home, &written);
+  FillConsoleOutputAttribute(console, csbi.wAttributes, length, home, &written);
+  SetConsoleCursorPosition(console, home);
+}
+
 void ui_render_board(const GomokuGame *game) {
   int row;
   int col;
@@ -59,7 +82,9 @@ void ui_render_board(const GomokuGame *game) {
   if (game == 0)
     return;
 
-  printf("Board %dx%d\n", game->board_size, game->board_size);
+  printf(msg_get(LANG_DEFAULT, MSG_BOARD_TITLE_FMT), game->board_size,
+         game->board_size);
+  printf("\n");
   for (row = 0; row < game->board_size; row++) {
     for (col = 0; col < game->board_size; col++) {
       int stone;
@@ -115,12 +140,15 @@ void ui_render_full(const GomokuGame *game, const UIState *state, int lang) {
   current_ms = get_current_ms();
   offset = 0;
 
-  APPEND("\x1b[3J\x1b[2J\x1b[H");
+  ui_clear_console();
 
-  APPEND("=== Gomoku %dx%d ===\n", game->board_size, game->board_size);
-  APPEND("Current: %s | Moves: %d\n\n",
-         game->current_player == STONE_BLACK ? "Black(X)" : "White(O)",
-         game->move_count);
+  APPEND(msg_get(lang, MSG_UI_TITLE_FMT), game->board_size, game->board_size);
+  APPEND("\n");
+  if (game->current_player == STONE_BLACK)
+    APPEND(msg_get(lang, MSG_UI_STATUS_BLACK_FMT), game->move_count);
+  else
+    APPEND(msg_get(lang, MSG_UI_STATUS_WHITE_FMT), game->move_count);
+  APPEND("\n\n");
 
   APPEND("   ");
   for (col = 0; col < game->board_size; col++)
@@ -179,7 +207,7 @@ void ui_render_full(const GomokuGame *game, const UIState *state, int lang) {
   APPEND("\n");
 
   APPEND("\n");
-  APPEND("[INPUT] > ");
+  APPEND("%s", msg_get(lang, MSG_UI_INPUT_LABEL));
   for (col = 0; col < state->input_length; col++) {
     if (col == state->input_cursor)
       APPEND("|");
@@ -188,14 +216,21 @@ void ui_render_full(const GomokuGame *game, const UIState *state, int lang) {
   if (state->input_cursor == state->input_length)
     APPEND("|");
   APPEND("\n");
-  APPEND("[SLOT] %s\n", msg_get(lang, MSG_INPUT_HINT));
-  if (!ui_message_expired(state, current_ms))
-    if (state->message_is_error)
-      APPEND("[MSG] \x1b[31m%s\x1b[0m", msg_get(lang, state->message_key));
-    else
-      APPEND("[MSG] %s", msg_get(lang, state->message_key));
-  else
-    APPEND("[MSG] %s", msg_get(lang, MSG_MOVE_HINT));
+  APPEND(msg_get(lang, MSG_UI_SLOT_LABEL_FMT), msg_get(lang, MSG_INPUT_HINT));
+  APPEND("\n");
+  if (!ui_message_expired(state, current_ms)) {
+    if (state->message_is_error) {
+      APPEND("%s", CFG_ANSI_COLOR_RED);
+      APPEND(msg_get(lang, MSG_UI_MSG_LABEL_FMT),
+             msg_get(lang, state->message_key));
+      APPEND("%s", CFG_ANSI_COLOR_RESET);
+    } else {
+      APPEND(msg_get(lang, MSG_UI_MSG_LABEL_FMT),
+             msg_get(lang, state->message_key));
+    }
+  } else {
+    APPEND(msg_get(lang, MSG_UI_MSG_LABEL_FMT), msg_get(lang, MSG_MOVE_HINT));
+  }
 
   frame[offset] = '\0';
   fputs(frame, stdout);

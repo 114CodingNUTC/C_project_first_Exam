@@ -26,6 +26,14 @@ int main(void) {
                !input_parse_move("z1", 15, &row, &col));
   print_result(&t, "reject bad format",
                !input_parse_move("@@", 15, &row, &col));
+  print_result(&t, "parse s19 on 19x19",
+               input_parse_move("s19", 19, &row, &col) && row == 18 &&
+                   col == 18);
+  print_result(&t, "parse 19s on 19x19",
+               input_parse_move("19s", 19, &row, &col) && row == 18 &&
+                   col == 18);
+  print_result(&t, "reject t19 on 19x19",
+               !input_parse_move("t19", 19, &row, &col));
 
   ui_init_state(&state, 15);
   print_result(&t, "cursor init center",

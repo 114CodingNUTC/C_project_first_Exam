@@ -7,7 +7,9 @@
 #define CFG_BOARD_SIZE_DEFAULT CFG_BOARD_SIZE_15
 #define CFG_MAX_BOARD_SIZE CFG_BOARD_SIZE_19
 
-#define CFG_MESSAGE_HOLD_MS 2000
+#define CFG_WIN_STREAK 5
+
+#define CFG_MESSAGE_HOLD_MS 0x7D0
 #define CFG_INPUT_BUFFER_SIZE 32
 
 #define CFG_MESSAGE_SLOT_HEIGHT 3
@@ -21,9 +23,37 @@
 #define CFG_CONSOLE_OUTPUT_CODEPAGE CFG_CONSOLE_CODEPAGE_UTF8
 #define CFG_CONSOLE_INPUT_CODEPAGE CFG_CONSOLE_CODEPAGE_UTF8
 
+#define CFG_ANSI_CLEAR_AND_HOME "\x1b[3J\x1b[2J\x1b[H"
+#define CFG_ANSI_COLOR_RED "\x1b[31m"
+#define CFG_ANSI_COLOR_RESET "\x1b[0m"
+
 #define LANG_ZH_TW 0
 #define LANG_EN_US 1
 #define LANG_DEFAULT LANG_ZH_TW
+
+#define CFG_KEY_CTRL_C 3
+#define CFG_KEY_BACKSPACE 8
+#define CFG_KEY_ENTER 13
+#define CFG_KEY_ESC 27
+#define CFG_KEY_EXTENDED_0 0
+#define CFG_KEY_EXTENDED_224 224
+#define CFG_KEY_DELETE 83
+#define CFG_KEY_UP 72
+#define CFG_KEY_DOWN 80
+#define CFG_KEY_LEFT 75
+#define CFG_KEY_RIGHT 77
+
+#define CFG_AI_MEDIUM_NEAR_RANGE 2
+
+#define CFG_AI_HARD_DEPTH 5
+#define CFG_AI_HARD_SEARCH_RANGE 2
+#define CFG_AI_EVAL_WIN 0x186A0
+#define CFG_AI_EVAL_FOUR 0x2710
+#define CFG_AI_EVAL_THREE 0x3E8
+#define CFG_AI_EVAL_TWO 0x64
+#define CFG_AI_EVAL_ONE 0xA
+#define CFG_AI_SCORE_POS_INF 0xF4240
+#define CFG_AI_SCORE_NEG_INF (-CFG_AI_SCORE_POS_INF)
 
 #define STONE_EMPTY 0
 #define STONE_BLACK 1
@@ -38,7 +68,7 @@ typedef struct GomokuGame {
   int last_col;
   int game_over;
   int winner;
-  int win_line[5][2];
+  int win_line[CFG_WIN_STREAK][2];
   int win_line_count;
 } GomokuGame;
 
@@ -60,7 +90,7 @@ int board_is_empty(const GomokuGame *game, int row, int col);
 int board_place_stone(GomokuGame *game, int player, int row, int col);
 
 int rules_check_win(const GomokuGame *game, int row, int col, int player,
-                    int out_line[5][2], int *out_count);
+                    int out_line[CFG_WIN_STREAK][2], int *out_count);
 int rules_is_draw(const GomokuGame *game);
 
 void game_reset(GomokuGame *game, int board_size);

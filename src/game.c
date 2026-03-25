@@ -20,8 +20,9 @@ static int handle_ai_turn(const GomokuGame *game, int mode, int *out_row,
   return 0;
 }
 
-static void trace_event(int event_code) {
-  printf("[TRACE] EV=%d\n", event_code);
+static void trace_event(int lang, int event_code) {
+  printf(msg_get(lang, MSG_TRACE_EVENT_FMT), event_code);
+  printf("\n");
 }
 
 void game_reset(GomokuGame *game, int board_size) {
@@ -38,7 +39,7 @@ void game_reset(GomokuGame *game, int board_size) {
   game->game_over = 0;
   game->winner = STONE_EMPTY;
   game->win_line_count = 0;
-  for (i = 0; i < 5; i++) {
+  for (i = 0; i < CFG_WIN_STREAK; i++) {
     game->win_line[i][0] = -1;
     game->win_line[i][1] = -1;
   }
@@ -139,7 +140,7 @@ int game_run_loop(int mode, int board_size, int lang) {
   game_reset(&game, board_size);
   ui_init_state(&ui_state, board_size);
   ui_set_message(&ui_state, MSG_READY, 0, now_ms(), CFG_MESSAGE_HOLD_MS);
-  trace_event(EV_READY);
+  trace_event(lang, EV_READY);
   state = GS_IN_GAME;
 
   while (1) {
@@ -148,14 +149,14 @@ int game_run_loop(int mode, int board_size, int lang) {
         if (mode != 1 && game.current_player == STONE_WHITE) {
           if (!handle_ai_turn(&game, mode, &row, &col)) {
             state = GS_MAIN_MENU;
-            trace_event(EV_BACK_TO_MENU);
+            trace_event(lang, EV_BACK_TO_MENU);
             break;
           }
         } else if (!input_read_player_move(&game, &ui_state, &row, &col)) {
           state = GS_PAUSED;
           ui_set_message(&ui_state, MSG_PAUSED, 0, now_ms(),
                          CFG_MESSAGE_HOLD_MS);
-          trace_event(EV_PAUSED);
+          trace_event(lang, EV_PAUSED);
           continue;
         }
 
@@ -163,14 +164,14 @@ int game_run_loop(int mode, int board_size, int lang) {
         if (try_place_stone(&game, player, row, col, &event_code, &msg_key) !=
             PLACE_OK) {
           ui_set_message(&ui_state, msg_key, 1, now_ms(), CFG_MESSAGE_HOLD_MS);
-          trace_event(event_code);
+          trace_event(lang, event_code);
           continue;
         }
 
         ui_set_message(&ui_state, msg_key, event_code == EV_INVALID_MOVE,
                        now_ms(), CFG_MESSAGE_HOLD_MS);
         ui_move_cursor(&ui_state, row, col, game.board_size);
-        trace_event(event_code);
+        trace_event(lang, event_code);
         continue;
       }
 
@@ -181,10 +182,10 @@ int game_run_loop(int mode, int board_size, int lang) {
         ui_show_message(MSG_WIN_WHITE);
       else
         ui_show_message(MSG_DRAW);
-      printf("按任意鍵返回主選單...\n");
+      printf("%s\n", msg_get(lang, MSG_PRESS_ANY_KEY_BACK_MENU));
       _getch();
       state = GS_MAIN_MENU;
-      trace_event(EV_BACK_TO_MENU);
+      trace_event(lang, EV_BACK_TO_MENU);
       break;
     }
 
@@ -194,32 +195,32 @@ int game_run_loop(int mode, int board_size, int lang) {
         state = GS_IN_GAME;
         ui_set_message(&ui_state, MSG_MOVE_HINT, 0, now_ms(),
                        CFG_MESSAGE_HOLD_MS);
-        trace_event(EV_RESUMED);
+        trace_event(lang, EV_RESUMED);
       } else if (pause_action == 2) {
         game_reset(&game, board_size);
         ui_init_state(&ui_state, board_size);
         ui_set_message(&ui_state, MSG_READY, 0, now_ms(), CFG_MESSAGE_HOLD_MS);
         state = GS_IN_GAME;
-        trace_event(EV_RESTARTED);
+        trace_event(lang, EV_RESTARTED);
       } else if (pause_action == 3) {
         state = GS_MAIN_MENU;
-        trace_event(EV_BACK_TO_MENU);
+        trace_event(lang, EV_BACK_TO_MENU);
       } else {
         state = GS_CONFIRM_EXIT;
-        trace_event(EV_EXIT_CONFIRM);
+        trace_event(lang, EV_EXIT_CONFIRM);
       }
       continue;
     }
 
     if (state == GS_CONFIRM_EXIT) {
       if (input_confirm_exit(lang)) {
-        trace_event(EV_EXIT_APP);
+        trace_event(lang, EV_EXIT_APP);
         return GAME_LOOP_EXIT_APP;
       }
       ui_set_message(&ui_state, MSG_EXIT_CANCELLED, 0, now_ms(),
                      CFG_MESSAGE_HOLD_MS);
       state = GS_PAUSED;
-      trace_event(EV_EXIT_CANCEL);
+      trace_event(lang, EV_EXIT_CANCEL);
       continue;
     }
 

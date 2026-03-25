@@ -1,14 +1,6 @@
 #include "config.h"
 #include <stdlib.h>
 
-#define AI_HARD_DEPTH 5
-#define AI_HARD_SEARCH_RANGE 2
-#define EVAL_WIN 100000
-#define EVAL_FOUR 10000
-#define EVAL_THREE 1000
-#define EVAL_TWO 100
-#define EVAL_ONE 10
-
 static int count_line(const GomokuGame *game, int row, int col, int player,
                       int dr, int dc) {
   int count;
@@ -55,16 +47,16 @@ static int eval_position(const GomokuGame *game, int row, int col, int player) {
                      -directions[i][1]);
     line_len = fwd + bwd + 1;
 
-    if (line_len >= 5)
-      total += EVAL_WIN;
+    if (line_len >= CFG_WIN_STREAK)
+      total += CFG_AI_EVAL_WIN;
     else if (line_len == 4)
-      total += EVAL_FOUR;
+      total += CFG_AI_EVAL_FOUR;
     else if (line_len == 3)
-      total += EVAL_THREE;
+      total += CFG_AI_EVAL_THREE;
     else if (line_len == 2)
-      total += EVAL_TWO;
+      total += CFG_AI_EVAL_TWO;
     else if (line_len == 1)
-      total += EVAL_ONE;
+      total += CFG_AI_EVAL_ONE;
   }
 
   /* Subtract opponent's potential (negative for maximizing our score) */
@@ -75,14 +67,14 @@ static int eval_position(const GomokuGame *game, int row, int col, int player) {
                      -directions[i][1]);
     line_len = fwd + bwd + 1;
 
-    if (line_len >= 5)
-      total -= EVAL_WIN * 2;
+    if (line_len >= CFG_WIN_STREAK)
+      total -= CFG_AI_EVAL_WIN * 2;
     else if (line_len == 4)
-      total -= EVAL_FOUR * 2;
+      total -= CFG_AI_EVAL_FOUR * 2;
     else if (line_len == 3)
-      total -= EVAL_THREE;
+      total -= CFG_AI_EVAL_THREE;
     else if (line_len == 2)
-      total -= EVAL_TWO;
+      total -= CFG_AI_EVAL_TWO;
   }
 
   return total;
@@ -119,13 +111,13 @@ static int minimax(GomokuGame *game, int depth, int alpha, int beta,
   int best_score;
   int out_event;
   int orig_player;
-  int out_line[5][2];
+  int out_line[CFG_WIN_STREAK][2];
 
   if (depth == 0)
     return evaluate_board(game, candidates);
 
   if (maximizing) {
-    best_score = -1000000;
+    best_score = CFG_AI_SCORE_NEG_INF;
     for (row = 0; row < game->board_size; row++) {
       for (col = 0; col < game->board_size; col++) {
         if (candidates[row][col] && board_is_empty(game, row, col)) {
@@ -133,7 +125,7 @@ static int minimax(GomokuGame *game, int depth, int alpha, int beta,
 
           if (rules_check_win(game, row, col, game->current_player, out_line,
                               &out_event)) {
-            score = EVAL_WIN;
+            score = CFG_AI_EVAL_WIN;
           } else {
             orig_player = game->current_player;
             game->current_player = (game->current_player == STONE_BLACK)
@@ -156,10 +148,11 @@ static int minimax(GomokuGame *game, int depth, int alpha, int beta,
       if (beta <= alpha)
         break;
     }
-    return (best_score == -1000000) ? evaluate_board(game, candidates)
-                                    : best_score;
+    return (best_score == CFG_AI_SCORE_NEG_INF)
+               ? evaluate_board(game, candidates)
+               : best_score;
   } else {
-    best_score = 1000000;
+    best_score = CFG_AI_SCORE_POS_INF;
     for (row = 0; row < game->board_size; row++) {
       for (col = 0; col < game->board_size; col++) {
         if (candidates[row][col] && board_is_empty(game, row, col)) {
@@ -187,8 +180,9 @@ static int minimax(GomokuGame *game, int depth, int alpha, int beta,
       if (beta <= alpha)
         break;
     }
-    return (best_score == 1000000) ? evaluate_board(game, candidates)
-                                   : best_score;
+    return (best_score == CFG_AI_SCORE_POS_INF)
+               ? evaluate_board(game, candidates)
+               : best_score;
   }
 }
 
@@ -201,7 +195,7 @@ find_candidates(const GomokuGame *game,
   int c;
   int range;
 
-  range = AI_HARD_SEARCH_RANGE;
+  range = CFG_AI_HARD_SEARCH_RANGE;
 
   for (row = 0; row < game->board_size; row++)
     for (col = 0; col < game->board_size; col++)
@@ -232,7 +226,7 @@ static int find_immediate_move(const GomokuGame *game, int player, int *out_row,
   int row;
   int col;
   int out_count;
-  int out_line[5][2];
+  int out_line[CFG_WIN_STREAK][2];
   GomokuGame temp;
 
   for (row = 0; row < game->board_size; row++) {
@@ -262,7 +256,7 @@ int ai_hard_pick_move(const GomokuGame *game, int *out_row, int *out_col) {
   int best_col;
   int candidates[CFG_MAX_BOARD_SIZE][CFG_MAX_BOARD_SIZE];
   GomokuGame game_copy;
-  int out_line[5][2];
+  int out_line[CFG_WIN_STREAK][2];
   int out_event;
   int opponent;
 
@@ -279,7 +273,7 @@ int ai_hard_pick_move(const GomokuGame *game, int *out_row, int *out_col) {
 
   find_candidates(game, candidates);
 
-  best_score = -1000000;
+  best_score = CFG_AI_SCORE_NEG_INF;
   best_row = -1;
   best_col = -1;
 
@@ -296,14 +290,15 @@ int ai_hard_pick_move(const GomokuGame *game, int *out_row, int *out_col) {
         /* Check if it wins immediately */
         if (rules_check_win(&game_copy, row, col, game->current_player,
                             out_line, &out_event)) {
-          score = EVAL_WIN;
+          score = CFG_AI_EVAL_WIN;
         } else {
           /* Run minimax */
           game_copy.current_player = (game_copy.current_player == STONE_BLACK)
                                          ? STONE_WHITE
                                          : STONE_BLACK;
-          score = minimax(&game_copy, AI_HARD_DEPTH - 1, -1000000, 1000000, 0,
-                          candidates);
+          score =
+              minimax(&game_copy, CFG_AI_HARD_DEPTH - 1, CFG_AI_SCORE_NEG_INF,
+                      CFG_AI_SCORE_POS_INF, 0, candidates);
         }
 
         if (score > best_score) {
