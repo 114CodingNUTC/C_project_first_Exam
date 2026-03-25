@@ -93,27 +93,42 @@ void ui_render_full(const GomokuGame *game, const UIState *state, int lang) {
   int row;
   int col;
   long long current_ms;
+  int offset;
+  char frame[32768];
+
+#define APPEND(...)                                                            \
+  do {                                                                         \
+    int _n;                                                                    \
+    _n =                                                                       \
+        snprintf(frame + offset, sizeof(frame) - (size_t)offset, __VA_ARGS__); \
+    if (_n > 0) {                                                              \
+      if ((size_t)_n >= sizeof(frame) - (size_t)offset)                        \
+        offset = (int)sizeof(frame) - 1;                                       \
+      else                                                                     \
+        offset += _n;                                                          \
+    }                                                                          \
+  } while (0)
 
   if (game == 0 || state == 0)
     return;
 
   current_ms = get_current_ms();
+  offset = 0;
 
-  if (system(CFG_CLEAR_SCREEN_CMD) != 0)
-    printf("\n\n");
+  APPEND("\x1b[3J\x1b[2J\x1b[H");
 
-  printf("=== Gomoku %dx%d ===\n", game->board_size, game->board_size);
-  printf("Current: %s | Moves: %d\n\n",
+  APPEND("=== Gomoku %dx%d ===\n", game->board_size, game->board_size);
+  APPEND("Current: %s | Moves: %d\n\n",
          game->current_player == STONE_BLACK ? "Black(X)" : "White(O)",
          game->move_count);
 
-  printf("   ");
+  APPEND("   ");
   for (col = 0; col < game->board_size; col++)
-    printf(" %c ", 'A' + col);
-  printf("\n");
+    APPEND(" %c ", 'A' + col);
+  APPEND("\n");
 
   for (row = 0; row < game->board_size; row++) {
-    printf("%2d", row + 1);
+    APPEND("%2d", row + 1);
     for (col = 0; col < game->board_size; col++) {
       int stone;
       int is_cursor = (state->cursor_row == row && state->cursor_col == col);
@@ -123,62 +138,68 @@ void ui_render_full(const GomokuGame *game, const UIState *state, int lang) {
       stone = game->board[row][col];
 
       if (is_cursor)
-        printf("[");
+        APPEND("[");
       else
-        printf(" ");
+        APPEND(" ");
 
       if (is_win) {
         if (stone == STONE_BLACK)
-          printf("#");
+          APPEND("#");
         else if (stone == STONE_WHITE)
-          printf("#");
+          APPEND("#");
         else
-          printf("#");
+          APPEND("#");
       } else if (is_last) {
         if (stone == STONE_BLACK)
-          printf("x");
+          APPEND("x");
         else if (stone == STONE_WHITE)
-          printf("o");
+          APPEND("o");
         else
-          printf(".");
+          APPEND(".");
       } else {
         if (stone == STONE_BLACK)
-          printf("X");
+          APPEND("X");
         else if (stone == STONE_WHITE)
-          printf("O");
+          APPEND("O");
         else
-          printf(".");
+          APPEND(".");
       }
 
       if (is_cursor)
-        printf("]");
+        APPEND("]");
       else
-        printf(" ");
+        APPEND(" ");
     }
-    printf("%2d\n", row + 1);
+    APPEND("%2d\n", row + 1);
   }
 
-  printf("   ");
+  APPEND("   ");
   for (col = 0; col < game->board_size; col++)
-    printf(" %c ", 'A' + col);
-  printf("\n");
+    APPEND(" %c ", 'A' + col);
+  APPEND("\n");
 
-  printf("\n");
-  printf("[INPUT] > ");
+  APPEND("\n");
+  APPEND("[INPUT] > ");
   for (col = 0; col < state->input_length; col++) {
     if (col == state->input_cursor)
-      printf("|");
-    printf("%c", state->input_text[col]);
+      APPEND("|");
+    APPEND("%c", state->input_text[col]);
   }
   if (state->input_cursor == state->input_length)
-    printf("|");
-  printf("\n");
-  printf("[SLOT] %s\n", msg_get(lang, MSG_INPUT_HINT));
+    APPEND("|");
+  APPEND("\n");
+  APPEND("[SLOT] %s\n", msg_get(lang, MSG_INPUT_HINT));
   if (!ui_message_expired(state, current_ms))
     if (state->message_is_error)
-      printf("[MSG] \x1b[31m%s\x1b[0m\n", msg_get(lang, state->message_key));
+      APPEND("[MSG] \x1b[31m%s\x1b[0m", msg_get(lang, state->message_key));
     else
-      printf("[MSG] %s\n", msg_get(lang, state->message_key));
+      APPEND("[MSG] %s", msg_get(lang, state->message_key));
   else
-    printf("[MSG] %s\n", msg_get(lang, MSG_MOVE_HINT));
+    APPEND("[MSG] %s", msg_get(lang, MSG_MOVE_HINT));
+
+  frame[offset] = '\0';
+  fputs(frame, stdout);
+  fflush(stdout);
+
+#undef APPEND
 }

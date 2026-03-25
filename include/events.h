@@ -7,7 +7,22 @@
 #define EV_WIN 130
 #define EV_DRAW 140
 #define EV_INVALID_MOVE 150
+#define EV_PAUSED 160
+#define EV_RESUMED 170
+#define EV_RESTARTED 180
+#define EV_BACK_TO_MENU 190
+#define EV_EXIT_CONFIRM 200
+#define EV_EXIT_CANCEL 210
+#define EV_EXIT_APP 220
 #define EV_ERROR 900
+
+#define GS_MAIN_MENU 1000
+#define GS_IN_GAME 1010
+#define GS_PAUSED 1020
+#define GS_CONFIRM_EXIT 1030
+
+#define GAME_LOOP_BACK_TO_MENU 0
+#define GAME_LOOP_EXIT_APP 1
 
 #define PLACE_OK 0
 #define PLACE_ERR_INVALID_ARG 1

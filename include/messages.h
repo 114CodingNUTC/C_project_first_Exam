@@ -29,6 +29,16 @@
 #define MSG_MOVE_HINT 31
 #define MSG_POSITION_HINT 32
 
+#define MSG_PAUSED 40
+#define MSG_MENU_PAUSE 41
+#define MSG_PAUSE_CONTINUE 42
+#define MSG_PAUSE_RESTART 43
+#define MSG_PAUSE_MAIN_MENU 44
+#define MSG_PAUSE_EXIT 45
+#define MSG_CONFIRM_EXIT 46
+#define MSG_EXIT_CANCELLED 47
+#define MSG_RETURN_MAIN_MENU 48
+
 const char *msg_get(int lang, int key);
 
 #endif

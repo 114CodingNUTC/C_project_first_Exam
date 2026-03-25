@@ -91,6 +91,7 @@ static void input_append_char(UIState *ui_state, int key) {
   ui_state->input_cursor++;
   ui_state->input_length++;
   ui_state->input_text[ui_state->input_length] = '\0';
+  ui_state->board_dirty = 1;
 }
 
 static void input_pop_char(UIState *ui_state) {
@@ -102,6 +103,7 @@ static void input_pop_char(UIState *ui_state) {
   ui_state->input_cursor--;
   ui_state->input_length--;
   ui_state->input_text[ui_state->input_length] = '\0';
+  ui_state->board_dirty = 1;
 }
 
 static void input_delete_char(UIState *ui_state) {
@@ -112,22 +114,28 @@ static void input_delete_char(UIState *ui_state) {
           (size_t)(ui_state->input_length - ui_state->input_cursor - 1));
   ui_state->input_length--;
   ui_state->input_text[ui_state->input_length] = '\0';
+  ui_state->board_dirty = 1;
 }
 
 static void input_move_left(UIState *ui_state) {
-  if (ui_state->input_cursor > 0)
+  if (ui_state->input_cursor > 0) {
     ui_state->input_cursor--;
+    ui_state->board_dirty = 1;
+  }
 }
 
 static void input_move_right(UIState *ui_state) {
-  if (ui_state->input_cursor < ui_state->input_length)
+  if (ui_state->input_cursor < ui_state->input_length) {
     ui_state->input_cursor++;
+    ui_state->board_dirty = 1;
+  }
 }
 
 static void input_clear(UIState *ui_state) {
   ui_state->input_length = 0;
   ui_state->input_cursor = 0;
   ui_state->input_text[0] = '\0';
+  ui_state->board_dirty = 1;
 }
 
 static int read_number_in_range(int min_value, int max_value) {
@@ -171,6 +179,22 @@ int input_choose_board_size(int lang) {
   }
 }
 
+int input_choose_pause_action(int lang) {
+  printf("\n%s\n", msg_get(lang, MSG_MENU_PAUSE));
+  printf("1) %s\n", msg_get(lang, MSG_PAUSE_CONTINUE));
+  printf("2) %s\n", msg_get(lang, MSG_PAUSE_RESTART));
+  printf("3) %s\n", msg_get(lang, MSG_PAUSE_MAIN_MENU));
+  printf("4) %s\n", msg_get(lang, MSG_PAUSE_EXIT));
+  printf("> ");
+  return read_number_in_range(1, 4);
+}
+
+int input_confirm_exit(int lang) {
+  printf("%s\n", msg_get(lang, MSG_CONFIRM_EXIT));
+  printf("> ");
+  return read_number_in_range(1, 2) == 1;
+}
+
 int input_read_player_move(const GomokuGame *game, UIState *ui_state,
                            int *out_row, int *out_col) {
   int key;
@@ -180,6 +204,9 @@ int input_read_player_move(const GomokuGame *game, UIState *ui_state,
   while (1) {
     ui_render_full(game, ui_state, LANG_DEFAULT);
     key = _getch();
+
+    if (key == 3)
+      ExitProcess(0);
 
     if (key == 27)
       return 0;

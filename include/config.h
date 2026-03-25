@@ -66,7 +66,7 @@ int rules_is_draw(const GomokuGame *game);
 void game_reset(GomokuGame *game, int board_size);
 int try_place_stone(GomokuGame *game, int player, int row, int col,
                     int *out_event_code, int *out_message_key);
-void game_run_loop(int mode, int board_size, int lang);
+int game_run_loop(int mode, int board_size, int lang);
 
 int input_parse_move(const char *text, int board_size, int *out_row,
                      int *out_col);
@@ -74,6 +74,8 @@ int input_read_player_move(const GomokuGame *game, UIState *ui_state,
                            int *out_row, int *out_col);
 int input_choose_mode(int lang);
 int input_choose_board_size(int lang);
+int input_choose_pause_action(int lang);
+int input_confirm_exit(int lang);
 
 void ui_render_board(const GomokuGame *game);
 void ui_show_message(int message_key);

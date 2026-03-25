@@ -27,6 +27,11 @@
    - **中等難度**：防守優先 + 基礎進攻（檢查對手連4防守，檢查自己連4進攻，優先靠近棋子位置）
    - **困難難度**：Minimax + Alpha-Beta 修剪 + 候選點縮減（搜索深度 5，主要考慮棋盤活躍區域）
    - 所有 AI 難度都走統一的 `try_place_stone()` 落子 API
+- ✓ 已完成 Phase E 流程整合（第一版）：
+   - 標準回合流程：顯示 → 取行動 → 共用落子 → 判定 → 換手
+   - ESC 進入暫停選單（繼續 / 重開 / 回主選單 / 退出確認）
+   - 狀態機：`InGame / Paused / ConfirmExit / MainMenu`
+   - 事件追蹤輸出（EV_READY / EV_STONE_PLACED / EV_WIN / EV_DRAW / EV_PAUSED / EV_EXIT_*）
 - 規格與分工主文件：`PLAN.md`。
 
 ## 預定目錄（依 PLAN）
@@ -163,6 +168,30 @@ int try_place_stone(
 - ✓ 簡單難度：隨機選擇所有位置（可驗證多次調用不同結果）
 - ✓ 中等難度：防守對手連4、進攻自己連4、靠近棋子策略
 - ✓ 困難難度：Minimax 尋找即時贏着、策略選擇、防守威脅
+
+## Phase E 流程整合（目前可用）
+
+### 狀態機
+- `InGame`：正常回合進行
+- `Paused`：ESC 後進入暫停選單
+- `ConfirmExit`：退出確認（是/否）
+- `MainMenu`：回主選單
+
+### 狀態轉移
+- `InGame --ESC--> Paused`
+- `Paused --繼續--> InGame`
+- `Paused --重開--> InGame（重置棋局）`
+- `Paused --回主選單--> MainMenu`
+- `Paused --退出--> ConfirmExit`
+- `ConfirmExit --否--> Paused`
+- `ConfirmExit --是--> 結束程式`
+
+### 事件追蹤樣例
+- `[TRACE] EV=100`（EV_READY）
+- `[TRACE] EV=120`（EV_STONE_PLACED）
+- `[TRACE] EV=130`（EV_WIN）
+- `[TRACE] EV=160`（EV_PAUSED）
+- `[TRACE] EV=220`（EV_EXIT_APP）
 
 ## Phase C 操作方式（目前可用）
 - 啟動後先選擇遊戲模式，再選擇棋盤大小。

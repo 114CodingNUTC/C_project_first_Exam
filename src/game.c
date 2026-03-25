@@ -20,6 +20,10 @@ static int handle_ai_turn(const GomokuGame *game, int mode, int *out_row,
   return 0;
 }
 
+static void trace_event(int event_code) {
+  printf("[TRACE] EV=%d\n", event_code);
+}
+
 void game_reset(GomokuGame *game, int board_size) {
   int i;
 
@@ -119,7 +123,7 @@ int try_place_stone(GomokuGame *game, int player, int row, int col,
   return PLACE_OK;
 }
 
-void game_run_loop(int mode, int board_size, int lang) {
+int game_run_loop(int mode, int board_size, int lang) {
   GomokuGame game;
   UIState ui_state;
   int row;
@@ -127,43 +131,101 @@ void game_run_loop(int mode, int board_size, int lang) {
   int event_code;
   int msg_key;
   int player;
+  int state;
+  int pause_action;
 
   srand((unsigned int)time(0));
 
   game_reset(&game, board_size);
   ui_init_state(&ui_state, board_size);
   ui_set_message(&ui_state, MSG_READY, 0, now_ms(), CFG_MESSAGE_HOLD_MS);
+  trace_event(EV_READY);
+  state = GS_IN_GAME;
 
-  while (!game.game_over) {
-    if (mode != 1 && game.current_player == STONE_WHITE) {
-      if (!handle_ai_turn(&game, mode, &row, &col))
-        break;
-    } else {
-      if (!input_read_player_move(&game, &ui_state, &row, &col))
-        break;
+  while (1) {
+    if (state == GS_IN_GAME) {
+      if (!game.game_over) {
+        if (mode != 1 && game.current_player == STONE_WHITE) {
+          if (!handle_ai_turn(&game, mode, &row, &col)) {
+            state = GS_MAIN_MENU;
+            trace_event(EV_BACK_TO_MENU);
+            break;
+          }
+        } else if (!input_read_player_move(&game, &ui_state, &row, &col)) {
+          state = GS_PAUSED;
+          ui_set_message(&ui_state, MSG_PAUSED, 0, now_ms(),
+                         CFG_MESSAGE_HOLD_MS);
+          trace_event(EV_PAUSED);
+          continue;
+        }
+
+        player = game.current_player;
+        if (try_place_stone(&game, player, row, col, &event_code, &msg_key) !=
+            PLACE_OK) {
+          ui_set_message(&ui_state, msg_key, 1, now_ms(), CFG_MESSAGE_HOLD_MS);
+          trace_event(event_code);
+          continue;
+        }
+
+        ui_set_message(&ui_state, msg_key, event_code == EV_INVALID_MOVE,
+                       now_ms(), CFG_MESSAGE_HOLD_MS);
+        ui_move_cursor(&ui_state, row, col, game.board_size);
+        trace_event(event_code);
+        continue;
+      }
+
+      ui_render_full(&game, &ui_state, lang);
+      if (game.winner == STONE_BLACK)
+        ui_show_message(MSG_WIN_BLACK);
+      else if (game.winner == STONE_WHITE)
+        ui_show_message(MSG_WIN_WHITE);
+      else
+        ui_show_message(MSG_DRAW);
+      printf("按任意鍵返回主選單...\n");
+      _getch();
+      state = GS_MAIN_MENU;
+      trace_event(EV_BACK_TO_MENU);
+      break;
     }
 
-    player = game.current_player;
-    if (try_place_stone(&game, player, row, col, &event_code, &msg_key) !=
-        PLACE_OK) {
-      ui_set_message(&ui_state, msg_key, 1, now_ms(), CFG_MESSAGE_HOLD_MS);
+    if (state == GS_PAUSED) {
+      pause_action = input_choose_pause_action(lang);
+      if (pause_action == 1) {
+        state = GS_IN_GAME;
+        ui_set_message(&ui_state, MSG_MOVE_HINT, 0, now_ms(),
+                       CFG_MESSAGE_HOLD_MS);
+        trace_event(EV_RESUMED);
+      } else if (pause_action == 2) {
+        game_reset(&game, board_size);
+        ui_init_state(&ui_state, board_size);
+        ui_set_message(&ui_state, MSG_READY, 0, now_ms(), CFG_MESSAGE_HOLD_MS);
+        state = GS_IN_GAME;
+        trace_event(EV_RESTARTED);
+      } else if (pause_action == 3) {
+        state = GS_MAIN_MENU;
+        trace_event(EV_BACK_TO_MENU);
+      } else {
+        state = GS_CONFIRM_EXIT;
+        trace_event(EV_EXIT_CONFIRM);
+      }
       continue;
     }
 
-    ui_set_message(&ui_state, msg_key, event_code == EV_INVALID_MOVE, now_ms(),
-                   CFG_MESSAGE_HOLD_MS);
-    ui_move_cursor(&ui_state, row, col, game.board_size);
+    if (state == GS_CONFIRM_EXIT) {
+      if (input_confirm_exit(lang)) {
+        trace_event(EV_EXIT_APP);
+        return GAME_LOOP_EXIT_APP;
+      }
+      ui_set_message(&ui_state, MSG_EXIT_CANCELLED, 0, now_ms(),
+                     CFG_MESSAGE_HOLD_MS);
+      state = GS_PAUSED;
+      trace_event(EV_EXIT_CANCEL);
+      continue;
+    }
+
+    if (state == GS_MAIN_MENU)
+      break;
   }
 
-  ui_render_full(&game, &ui_state, lang);
-  if (game.game_over) {
-    if (game.winner == STONE_BLACK)
-      ui_show_message(MSG_WIN_BLACK);
-    else if (game.winner == STONE_WHITE)
-      ui_show_message(MSG_WIN_WHITE);
-    else
-      ui_show_message(MSG_DRAW);
-  }
-  printf("按任意鍵返回主選單...\n");
-  _getch();
+  return GAME_LOOP_BACK_TO_MENU;
 }

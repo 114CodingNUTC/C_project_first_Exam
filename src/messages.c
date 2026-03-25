@@ -34,7 +34,17 @@ static const MessagePair k_messages[] = {
      "Enter position (e.g. a1) or use arrow keys"},
     {MSG_MOVE_HINT, "ESC暫停 | 方向鍵移動 | Enter落子",
      "ESC pause | Arrows move | Enter place"},
-    {MSG_POSITION_HINT, "位置: %c%d", "Position: %c%d"}};
+    {MSG_POSITION_HINT, "位置: %c%d", "Position: %c%d"},
+    {MSG_PAUSED, "遊戲已暫停", "Game paused"},
+    {MSG_MENU_PAUSE, "暫停選單", "Pause menu"},
+    {MSG_PAUSE_CONTINUE, "繼續遊戲", "Continue"},
+    {MSG_PAUSE_RESTART, "重新開始", "Restart"},
+    {MSG_PAUSE_MAIN_MENU, "回主選單", "Back to main menu"},
+    {MSG_PAUSE_EXIT, "退出遊戲", "Exit game"},
+    {MSG_CONFIRM_EXIT, "確定要退出？(1=是, 2=否)",
+     "Confirm exit? (1=Yes, 2=No)"},
+    {MSG_EXIT_CANCELLED, "已取消退出", "Exit cancelled"},
+    {MSG_RETURN_MAIN_MENU, "返回主選單", "Return to main menu"}};
 
 const char *msg_get(int lang, int key) {
   int i;
