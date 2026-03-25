@@ -21,6 +21,7 @@ static void setup_console_codepage(void) {
 int main(void) {
   int mode;
   int board_size;
+  int ai_turn_choice;
   int loop_result;
 
   setup_console_codepage();
@@ -31,7 +32,11 @@ int main(void) {
 
     mode = input_choose_mode(LANG_DEFAULT);
     board_size = input_choose_board_size(LANG_DEFAULT);
-    loop_result = game_run_loop(mode, board_size, LANG_DEFAULT);
+    ai_turn_choice = CFG_AI_TURN_PLAYER_FIRST;
+    if (mode != 1)
+      ai_turn_choice = input_choose_ai_turn(LANG_DEFAULT);
+
+    loop_result = game_run_loop(mode, board_size, ai_turn_choice, LANG_DEFAULT);
     if (loop_result == GAME_LOOP_EXIT_APP)
       break;
   }

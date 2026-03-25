@@ -59,6 +59,9 @@
 #define STONE_BLACK 1
 #define STONE_WHITE 2
 
+#define CFG_AI_TURN_PLAYER_FIRST 1
+#define CFG_AI_TURN_AI_FIRST 2
+
 typedef struct GomokuGame {
   int board_size;
   int board[CFG_MAX_BOARD_SIZE][CFG_MAX_BOARD_SIZE];
@@ -96,7 +99,7 @@ int rules_is_draw(const GomokuGame *game);
 void game_reset(GomokuGame *game, int board_size);
 int try_place_stone(GomokuGame *game, int player, int row, int col,
                     int *out_event_code, int *out_message_key);
-int game_run_loop(int mode, int board_size, int lang);
+int game_run_loop(int mode, int board_size, int ai_turn_choice, int lang);
 
 int input_parse_move(const char *text, int board_size, int *out_row,
                      int *out_col);
@@ -104,6 +107,7 @@ int input_read_player_move(const GomokuGame *game, UIState *ui_state,
                            int *out_row, int *out_col);
 int input_choose_mode(int lang);
 int input_choose_board_size(int lang);
+int input_choose_ai_turn(int lang);
 int input_choose_pause_action(int lang);
 int input_confirm_exit(int lang);
 

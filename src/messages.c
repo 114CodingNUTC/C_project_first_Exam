@@ -30,6 +30,7 @@ static const MessagePair k_messages[] = {
     {MSG_BOARD_9X9, "9×9 棋盤", "9x9 Board"},
     {MSG_BOARD_15X15, "15×15 棋盤", "15x15 Board"},
     {MSG_BOARD_19X19, "19×19 棋盤", "19x19 Board"},
+    {MSG_MENU_AI_TURN, "選擇 AI 先後手", "Choose AI turn order"},
     {MSG_INPUT_HINT, "輸入位置 (如 a1) 或方向鍵移動",
      "Enter position (e.g. a1) or use arrow keys"},
     {MSG_MOVE_HINT, "ESC暫停 | 方向鍵移動 | Enter落子",
@@ -57,7 +58,9 @@ static const MessagePair k_messages[] = {
     {MSG_UI_INPUT_LABEL, "[輸入] > ", "[INPUT] > "},
     {MSG_UI_SLOT_LABEL_FMT, "[提示區] %s", "[SLOT] %s"},
     {MSG_UI_MSG_LABEL_FMT, "[訊息] %s", "[MSG] %s"},
-    {MSG_BOARD_TITLE_FMT, "棋盤 %dx%d", "Board %dx%d"}};
+    {MSG_BOARD_TITLE_FMT, "棋盤 %dx%d", "Board %dx%d"},
+    {MSG_AI_TURN_PLAYER_FIRST, "玩家先手", "Player first"},
+    {MSG_AI_TURN_AI_FIRST, "AI 先手", "AI first"}};
 
 const char *msg_get(int lang, int key) {
   int i;

@@ -24,6 +24,7 @@
 #define MSG_BOARD_9X9 26
 #define MSG_BOARD_15X15 27
 #define MSG_BOARD_19X19 28
+#define MSG_MENU_AI_TURN 29
 
 #define MSG_INPUT_HINT 30
 #define MSG_MOVE_HINT 31
@@ -50,6 +51,8 @@
 #define MSG_UI_SLOT_LABEL_FMT 64
 #define MSG_UI_MSG_LABEL_FMT 65
 #define MSG_BOARD_TITLE_FMT 66
+#define MSG_AI_TURN_PLAYER_FIRST 67
+#define MSG_AI_TURN_AI_FIRST 68
 
 const char *msg_get(int lang, int key);
 

@@ -190,6 +190,15 @@ int input_choose_board_size(int lang) {
   }
 }
 
+int input_choose_ai_turn(int lang) {
+  printf("%s\n", msg_get(lang, MSG_MENU_AI_TURN));
+  printf("1) %s\n", msg_get(lang, MSG_AI_TURN_PLAYER_FIRST));
+  printf("2) %s\n", msg_get(lang, MSG_AI_TURN_AI_FIRST));
+  printf("> ");
+  return read_number_in_range(CFG_AI_TURN_PLAYER_FIRST, CFG_AI_TURN_AI_FIRST,
+                              lang);
+}
+
 int input_choose_pause_action(int lang) {
   printf("\n%s\n", msg_get(lang, MSG_MENU_PAUSE));
   printf("1) %s\n", msg_get(lang, MSG_PAUSE_CONTINUE));

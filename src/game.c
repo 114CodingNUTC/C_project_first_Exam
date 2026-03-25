@@ -124,7 +124,7 @@ int try_place_stone(GomokuGame *game, int player, int row, int col,
   return PLACE_OK;
 }
 
-int game_run_loop(int mode, int board_size, int lang) {
+int game_run_loop(int mode, int board_size, int ai_turn_choice, int lang) {
   GomokuGame game;
   UIState ui_state;
   int row;
@@ -138,6 +138,8 @@ int game_run_loop(int mode, int board_size, int lang) {
   srand((unsigned int)time(0));
 
   game_reset(&game, board_size);
+  if (mode != 1 && ai_turn_choice == CFG_AI_TURN_AI_FIRST)
+    game.current_player = STONE_WHITE;
   ui_init_state(&ui_state, board_size);
   ui_set_message(&ui_state, MSG_READY, 0, now_ms(), CFG_MESSAGE_HOLD_MS);
   trace_event(lang, EV_READY);
