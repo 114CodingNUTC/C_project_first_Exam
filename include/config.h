@@ -8,8 +8,16 @@
 #define CFG_MAX_BOARD_SIZE CFG_BOARD_SIZE_19
 
 #define CFG_MESSAGE_HOLD_MS 2000
+#define CFG_INPUT_BUFFER_SIZE 32
+
+#define CFG_MESSAGE_SLOT_HEIGHT 3
+#define CFG_MIN_DISPLAY_HEIGHT 3
+#define CFG_CLEAR_SCREEN_CMD "cls"
 
 #define CFG_CONSOLE_CODEPAGE_UTF8 0xFDE9
+
+#define CURSOR_HIDDEN 0
+#define CURSOR_VISIBLE 1
 #define CFG_CONSOLE_OUTPUT_CODEPAGE CFG_CONSOLE_CODEPAGE_UTF8
 #define CFG_CONSOLE_INPUT_CODEPAGE CFG_CONSOLE_CODEPAGE_UTF8
 
@@ -34,6 +42,18 @@ typedef struct GomokuGame {
   int win_line_count;
 } GomokuGame;
 
+typedef struct UIState {
+  int cursor_row;
+  int cursor_col;
+  int message_key;
+  long long message_display_end_ms;
+  int message_is_error;
+  int board_dirty;
+  char input_text[CFG_INPUT_BUFFER_SIZE];
+  int input_length;
+  int input_cursor;
+} UIState;
+
 void board_init(GomokuGame *game, int board_size);
 int board_is_in_bounds(const GomokuGame *game, int row, int col);
 int board_is_empty(const GomokuGame *game, int row, int col);
@@ -46,12 +66,24 @@ int rules_is_draw(const GomokuGame *game);
 void game_reset(GomokuGame *game, int board_size);
 int try_place_stone(GomokuGame *game, int player, int row, int col,
                     int *out_event_code, int *out_message_key);
+void game_run_loop(int mode, int board_size, int lang);
 
 int input_parse_move(const char *text, int board_size, int *out_row,
                      int *out_col);
+int input_read_player_move(const GomokuGame *game, UIState *ui_state,
+                           int *out_row, int *out_col);
+int input_choose_mode(int lang);
+int input_choose_board_size(int lang);
 
 void ui_render_board(const GomokuGame *game);
 void ui_show_message(int message_key);
+
+void ui_init_state(UIState *state, int board_size);
+void ui_render_full(const GomokuGame *game, const UIState *state, int lang);
+void ui_set_message(UIState *state, int message_key, int is_error,
+                    long long current_ms, long long hold_ms);
+int ui_message_expired(const UIState *state, long long current_ms);
+void ui_move_cursor(UIState *state, int row, int col, int board_size);
 
 int ai_easy_pick_move(const GomokuGame *game, int *out_row, int *out_col);
 int ai_medium_pick_move(const GomokuGame *game, int *out_row, int *out_col);

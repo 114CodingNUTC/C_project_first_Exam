@@ -20,7 +20,21 @@ static const MessagePair k_messages[] = {
     {MSG_CELL_OCCUPIED, "該位置已有棋子", "Cell already occupied"},
     {MSG_NOT_YOUR_TURN, "目前不是此方回合", "Not this player's turn"},
     {MSG_GAME_OVER, "對局已結束", "Game is already over"},
-    {MSG_INTERNAL_ERROR, "系統錯誤", "Internal error"}};
+    {MSG_INTERNAL_ERROR, "系統錯誤", "Internal error"},
+    {MSG_MENU_MODE, "選擇遊戲模式", "Select game mode"},
+    {MSG_MENU_BOARD, "選擇棋盤大小", "Select board size"},
+    {MSG_MODE_1V1, "1v1 對戰", "1v1 Play"},
+    {MSG_MODE_1V_AI_EASY, "1v AI (簡單)", "1v AI (Easy)"},
+    {MSG_MODE_1V_AI_MEDIUM, "1v AI (中等)", "1v AI (Medium)"},
+    {MSG_MODE_1V_AI_HARD, "1v AI (困難)", "1v AI (Hard)"},
+    {MSG_BOARD_9X9, "9×9 棋盤", "9x9 Board"},
+    {MSG_BOARD_15X15, "15×15 棋盤", "15x15 Board"},
+    {MSG_BOARD_19X19, "19×19 棋盤", "19x19 Board"},
+    {MSG_INPUT_HINT, "輸入位置 (如 a1) 或方向鍵移動",
+     "Enter position (e.g. a1) or use arrow keys"},
+    {MSG_MOVE_HINT, "ESC暫停 | 方向鍵移動 | Enter落子",
+     "ESC pause | Arrows move | Enter place"},
+    {MSG_POSITION_HINT, "位置: %c%d", "Position: %c%d"}};
 
 const char *msg_get(int lang, int key) {
   int i;

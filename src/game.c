@@ -1,6 +1,22 @@
 #include "config.h"
 #include "events.h"
 #include "messages.h"
+#include <conio.h>
+#include <stdio.h>
+#include <windows.h>
+
+static long long now_ms(void) { return GetTickCount64(); }
+
+static int handle_ai_turn(const GomokuGame *game, int mode, int *out_row,
+                          int *out_col) {
+  if (mode == 2)
+    return ai_easy_pick_move(game, out_row, out_col);
+  if (mode == 3)
+    return ai_medium_pick_move(game, out_row, out_col);
+  if (mode == 4)
+    return ai_hard_pick_move(game, out_row, out_col);
+  return 0;
+}
 
 void game_reset(GomokuGame *game, int board_size) {
   int i;
@@ -99,4 +115,51 @@ int try_place_stone(GomokuGame *game, int player, int row, int col,
   }
 
   return PLACE_OK;
+}
+
+void game_run_loop(int mode, int board_size, int lang) {
+  GomokuGame game;
+  UIState ui_state;
+  int row;
+  int col;
+  int event_code;
+  int msg_key;
+  int player;
+
+  game_reset(&game, board_size);
+  ui_init_state(&ui_state, board_size);
+  ui_set_message(&ui_state, MSG_READY, 0, now_ms(), CFG_MESSAGE_HOLD_MS);
+
+  while (!game.game_over) {
+    if (mode != 1 && game.current_player == STONE_WHITE) {
+      if (!handle_ai_turn(&game, mode, &row, &col))
+        break;
+    } else {
+      if (!input_read_player_move(&game, &ui_state, &row, &col))
+        break;
+    }
+
+    player = game.current_player;
+    if (try_place_stone(&game, player, row, col, &event_code, &msg_key) !=
+        PLACE_OK) {
+      ui_set_message(&ui_state, msg_key, 1, now_ms(), CFG_MESSAGE_HOLD_MS);
+      continue;
+    }
+
+    ui_set_message(&ui_state, msg_key, event_code == EV_INVALID_MOVE, now_ms(),
+                   CFG_MESSAGE_HOLD_MS);
+    ui_move_cursor(&ui_state, row, col, game.board_size);
+  }
+
+  ui_render_full(&game, &ui_state, lang);
+  if (game.game_over) {
+    if (game.winner == STONE_BLACK)
+      ui_show_message(MSG_WIN_BLACK);
+    else if (game.winner == STONE_WHITE)
+      ui_show_message(MSG_WIN_WHITE);
+    else
+      ui_show_message(MSG_DRAW);
+  }
+  printf("按任意鍵返回主選單...\n");
+  _getch();
 }
