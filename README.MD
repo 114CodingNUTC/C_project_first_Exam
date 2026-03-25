@@ -9,7 +9,8 @@
 - 模組化：規則、輸入、UI、AI 分層，避免邏輯交叉。
 
 ## 目前進度
-- 現階段為初始化階段，`src/game.c` 為最小可編譯入口。
+- 已完成 Phase A 骨架：`include/` 三中心與 `src/` 模組最小可編譯版本。
+- 已定義並實作共用落子 API：`try_place_stone(...)`（玩家/AI 統一入口）。
 - 規格與分工主文件：`PLAN.md`。
 
 ## 預定目錄（依 PLAN）
@@ -44,6 +45,24 @@ game.exe
 - 事件碼集中在 `events.h`
 - 文案鍵值集中在 `messages.h` / `messages.c`
 - 設定集中在 `config.h`（修改後需重編譯）
+
+## Phase A 契約（已落地）
+- 共用落子 API（位於 `src/game.c`）：
+
+```c
+int try_place_stone(
+	GomokuGame *game,
+	int player,
+	int row,
+	int col,
+	int *out_event_code,
+	int *out_message_key
+);
+```
+
+- `out_event_code`：回報事件碼（如 `EV_STONE_PLACED` / `EV_WIN` / `EV_DRAW` / `EV_INVALID_MOVE`）
+- `out_message_key`：回報文案鍵值（由 `messages.c` 映射語系字串）
+- 玩家與 AI 必須共用此 API，禁止規則分叉。
 
 ## UI/流程要求（後續實作）
 - 右下角單一訊息槽（提示/錯誤共區）

@@ -1,0 +1,35 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build game.exe (gcc)",
+            "type": "shell",
+            "command": "gcc",
+            "args": [
+                "-o",
+                "game.exe",
+                "src/main.c",
+                "src/game.c",
+                "src/board.c",
+                "src/rules.c",
+                "src/input.c",
+                "src/ui.c",
+                "src/messages.c",
+                "src/ai_easy.c",
+                "src/ai_medium.c",
+                "src/ai_hard.c",
+                "-Iinclude"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        }
+    ]
+}

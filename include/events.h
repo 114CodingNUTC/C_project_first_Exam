@@ -1,0 +1,20 @@
+#ifndef EVENTS_H
+#define EVENTS_H
+
+#define EV_READY 100
+#define EV_ROUND_START 110
+#define EV_STONE_PLACED 120
+#define EV_WIN 130
+#define EV_DRAW 140
+#define EV_INVALID_MOVE 150
+#define EV_ERROR 900
+
+#define PLACE_OK 0
+#define PLACE_ERR_INVALID_ARG 1
+#define PLACE_ERR_GAME_OVER 2
+#define PLACE_ERR_NOT_CURRENT_PLAYER 3
+#define PLACE_ERR_OUT_OF_BOUNDS 4
+#define PLACE_ERR_OCCUPIED 5
+#define PLACE_ERR_INTERNAL 9
+
+#endif
