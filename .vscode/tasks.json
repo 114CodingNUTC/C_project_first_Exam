@@ -1,0 +1,19 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build game.exe (makefile.win)",
+            "type": "shell",
+            "command": "mingw32-make",
+            "args": [
+                "-f",
+                "makefile.win"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        }
+    ]
+}
