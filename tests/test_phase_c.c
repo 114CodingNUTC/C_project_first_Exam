@@ -1,4 +1,5 @@
 #include "config.h"
+#include "functions.h"
 #include "messages.h"
 #include <stdio.h>
 

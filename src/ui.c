@@ -1,9 +1,15 @@
 #include "../include/config.h"
+#include "../include/functions.h"
 #include "../include/messages.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h>
 
+/**
+ * @brief 初始化 UI 狀態。
+ * @param state UI 狀態物件。
+ * @param board_size 棋盤邊長。
+ */
 void ui_init_state(UIState *state, int board_size) {
   if (state == 0)
     return;
@@ -18,6 +24,13 @@ void ui_init_state(UIState *state, int board_size) {
   state->input_cursor = 0;
 }
 
+/**
+ * @brief 移動游標並限制於棋盤範圍。
+ * @param state UI 狀態物件。
+ * @param row 目標列索引。
+ * @param col 目標行索引。
+ * @param board_size 棋盤邊長。
+ */
 void ui_move_cursor(UIState *state, int row, int col, int board_size) {
   if (state == 0 || board_size <= 0)
     return;
@@ -34,6 +47,14 @@ void ui_move_cursor(UIState *state, int row, int col, int board_size) {
   state->board_dirty = 1;
 }
 
+/**
+ * @brief 設定提示訊息與顯示時效。
+ * @param state UI 狀態物件。
+ * @param message_key 訊息鍵值。
+ * @param is_error 是否為錯誤訊息。
+ * @param current_ms 當前時間毫秒。
+ * @param hold_ms 顯示持續毫秒。
+ */
 void ui_set_message(UIState *state, int message_key, int is_error,
                     long long current_ms, long long hold_ms) {
   if (state == 0)
@@ -44,14 +65,27 @@ void ui_set_message(UIState *state, int message_key, int is_error,
   state->board_dirty = 1;
 }
 
+/**
+ * @brief 檢查訊息是否過期。
+ * @param state UI 狀態物件。
+ * @param current_ms 當前時間毫秒。
+ * @return 1 代表訊息過期；0 代表仍有效。
+ */
 int ui_message_expired(const UIState *state, long long current_ms) {
   if (state == 0)
     return 1;
   return current_ms >= state->message_display_end_ms;
 }
 
+/**
+ * @brief 取得目前毫秒時間戳。
+ * @return 從系統啟動至今的毫秒數。
+ */
 static long long get_current_ms(void) { return GetTickCount64(); }
 
+/**
+ * @brief 清空主控台畫面並將游標回到原點。
+ */
 static void ui_clear_console(void) {
   HANDLE console;
   CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -75,6 +109,10 @@ static void ui_clear_console(void) {
   SetConsoleCursorPosition(console, home);
 }
 
+/**
+ * @brief 繪製純棋盤內容（簡易版本）。
+ * @param game 遊戲狀態物件。
+ */
 void ui_render_board(const GomokuGame *game) {
   int row;
   int col;
@@ -90,20 +128,31 @@ void ui_render_board(const GomokuGame *game) {
       int stone;
       stone = game->board[row][col];
       if (stone == STONE_BLACK)
-        printf("X ");
+        printf("%c ", CFG_STONE_CHAR_BLACK);
       else if (stone == STONE_WHITE)
-        printf("O ");
+        printf("%c ", CFG_STONE_CHAR_WHITE);
       else
-        printf(". ");
+        printf("%c ", CFG_STONE_CHAR_EMPTY);
     }
     printf("\n");
   }
 }
 
+/**
+ * @brief 顯示單行訊息。
+ * @param message_key 訊息鍵值。
+ */
 void ui_show_message(int message_key) {
   printf("%s\n", msg_get(LANG_DEFAULT, message_key));
 }
 
+/**
+ * @brief 判斷指定座標是否屬於終局成線位置。
+ * @param game 遊戲狀態物件。
+ * @param row 目標列索引。
+ * @param col 目標行索引。
+ * @return 1 代表屬於成線；0 代表否。
+ */
 static int is_win_line_position(const GomokuGame *game, int row, int col) {
   int i;
   if (game == 0 || game->win_line_count == 0)
@@ -114,6 +163,12 @@ static int is_win_line_position(const GomokuGame *game, int row, int col) {
   return 0;
 }
 
+/**
+ * @brief 重新渲染完整遊戲畫面（棋盤、輸入列、訊息槽）。
+ * @param game 遊戲狀態物件。
+ * @param state UI 狀態物件。
+ * @param lang 語系。
+ */
 void ui_render_full(const GomokuGame *game, const UIState *state, int lang) {
   int row;
   int col;
@@ -165,38 +220,40 @@ void ui_render_full(const GomokuGame *game, const UIState *state, int lang) {
 
       stone = game->board[row][col];
 
-      if (is_cursor)
-        APPEND("[");
-      else
-        APPEND(" ");
-
       if (is_win) {
         if (stone == STONE_BLACK)
-          APPEND("#");
+          APPEND("[%c]", CFG_STONE_CHAR_BLACK);
         else if (stone == STONE_WHITE)
-          APPEND("#");
+          APPEND("[%c]", CFG_STONE_CHAR_WHITE);
         else
-          APPEND("#");
-      } else if (is_last) {
-        if (stone == STONE_BLACK)
-          APPEND("x");
-        else if (stone == STONE_WHITE)
-          APPEND("o");
-        else
-          APPEND(".");
+          APPEND("[%c]", CFG_STONE_CHAR_WIN_FALLBACK);
       } else {
-        if (stone == STONE_BLACK)
-          APPEND("X");
-        else if (stone == STONE_WHITE)
-          APPEND("O");
+        if (is_cursor)
+          APPEND("[");
         else
-          APPEND(".");
-      }
+          APPEND(" ");
 
-      if (is_cursor)
-        APPEND("]");
-      else
-        APPEND(" ");
+        if (is_last) {
+        if (stone == STONE_BLACK)
+          APPEND("%c", CFG_STONE_CHAR_BLACK_LAST);
+        else if (stone == STONE_WHITE)
+          APPEND("%c", CFG_STONE_CHAR_WHITE_LAST);
+        else
+          APPEND("%c", CFG_STONE_CHAR_EMPTY);
+        } else {
+          if (stone == STONE_BLACK)
+            APPEND("%c", CFG_STONE_CHAR_BLACK);
+          else if (stone == STONE_WHITE)
+            APPEND("%c", CFG_STONE_CHAR_WHITE);
+          else
+            APPEND("%c", CFG_STONE_CHAR_EMPTY);
+        }
+
+        if (is_cursor)
+          APPEND("]");
+        else
+          APPEND(" ");
+      }
     }
     APPEND("%2d\n", row + 1);
   }

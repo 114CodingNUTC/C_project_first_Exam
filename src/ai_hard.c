@@ -1,6 +1,17 @@
 #include "../include/config.h"
+#include "../include/functions.h"
 #include <stdlib.h>
 
+/**
+ * @brief 計算指定方向上的連續同色棋子數。
+ * @param game 當前遊戲狀態。
+ * @param row 起點列索引。
+ * @param col 起點行索引。
+ * @param player 目標玩家。
+ * @param dr 列方向增量。
+ * @param dc 行方向增量。
+ * @return 連續棋子數量。
+ */
 static int count_line(const GomokuGame *game, int row, int col, int player,
                       int dr, int dc) {
   int count;
@@ -18,6 +29,14 @@ static int count_line(const GomokuGame *game, int row, int col, int player,
   return count;
 }
 
+/**
+ * @brief 評估單一候選位置的分數。
+ * @param game 當前遊戲狀態。
+ * @param row 候選列索引。
+ * @param col 候選行索引。
+ * @param player 評估玩家。
+ * @return 該位置分數。
+ */
 static int eval_position(const GomokuGame *game, int row, int col, int player) {
   int total;
   int opposite;
@@ -80,6 +99,12 @@ static int eval_position(const GomokuGame *game, int row, int col, int player) {
   return total;
 }
 
+/**
+ * @brief 估算候選點集合的整體盤面分數。
+ * @param game 當前遊戲狀態。
+ * @param candidates 候選點矩陣。
+ * @return 累積評估分數。
+ */
 static int
 evaluate_board(const GomokuGame *game,
                int candidates[CFG_MAX_BOARD_SIZE][CFG_MAX_BOARD_SIZE]) {
@@ -102,6 +127,16 @@ evaluate_board(const GomokuGame *game,
   return total;
 }
 
+/**
+ * @brief Minimax + Alpha-Beta 搜尋。
+ * @param game 可變遊戲狀態副本。
+ * @param depth 剩餘搜尋深度。
+ * @param alpha Alpha 下界。
+ * @param beta Beta 上界。
+ * @param maximizing 是否為最大化節點。
+ * @param candidates 候選點矩陣。
+ * @return 此節點評估分數。
+ */
 static int minimax(GomokuGame *game, int depth, int alpha, int beta,
                    int maximizing,
                    int candidates[CFG_MAX_BOARD_SIZE][CFG_MAX_BOARD_SIZE]) {
@@ -186,6 +221,11 @@ static int minimax(GomokuGame *game, int depth, int alpha, int beta,
   }
 }
 
+/**
+ * @brief 建立候選落子點集合，縮小搜尋範圍。
+ * @param game 當前遊戲狀態。
+ * @param candidates 候選點矩陣輸出。
+ */
 static void
 find_candidates(const GomokuGame *game,
                 int candidates[CFG_MAX_BOARD_SIZE][CFG_MAX_BOARD_SIZE]) {
@@ -221,6 +261,14 @@ find_candidates(const GomokuGame *game,
   }
 }
 
+/**
+ * @brief 找尋可立即致勝的一步。
+ * @param game 當前遊戲狀態。
+ * @param player 要測試的玩家。
+ * @param out_row 輸出列索引。
+ * @param out_col 輸出行索引。
+ * @return 1 代表找到；0 代表沒找到。
+ */
 static int find_immediate_move(const GomokuGame *game, int player, int *out_row,
                                int *out_col) {
   int row;
@@ -247,6 +295,13 @@ static int find_immediate_move(const GomokuGame *game, int player, int *out_row,
   return 0;
 }
 
+/**
+ * @brief 困難 AI：先做立即勝負檢查，再用 Minimax 搜尋最佳落點。
+ * @param game 當前遊戲狀態。
+ * @param out_row 輸出列索引。
+ * @param out_col 輸出行索引。
+ * @return 1 代表成功找到位置；0 代表無合法位置或參數錯誤。
+ */
 int ai_hard_pick_move(const GomokuGame *game, int *out_row, int *out_col) {
   int row;
   int col;

@@ -11,7 +11,7 @@ ResourceIncludes=
 MakeIncludes=
 Compiler=
 CppCompiler=
-Linker=include/config.h_@@_include/events.h_@@_include/messages.h_@@_
+Linker=include/config.h_@@_include/events.h_@@_include/messages.h_@@_include/functions.h_@@_
 IsCpp=0
 Icon=
 ExeOutput=..\C_project_first_Exam
@@ -29,7 +29,7 @@ IncludeVersionInfo=0
 SupportXPThemes=0
 CompilerSet=0
 CompilerSettings=0000000000000000000000000
-UnitCount=13
+UnitCount=14
 
 [VersionInfo]
 Major=1
@@ -172,6 +172,16 @@ BuildCmd=
 
 [Unit13]
 FileName=include\messages.h
+CompileCpp=0
+Folder=
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit14]
+FileName=include\functions.h
 CompileCpp=0
 Folder=
 Compile=1

@@ -1,7 +1,15 @@
 #include "../include/config.h"
+#include "../include/functions.h"
 #include <stdlib.h>
 #include <time.h>
 
+/**
+ * @brief 簡單 AI：隨機挑選一個可落子位置。
+ * @param game 當前遊戲狀態。
+ * @param out_row 輸出列索引。
+ * @param out_col 輸出行索引。
+ * @return 1 代表成功找到位置；0 代表無合法位置或參數錯誤。
+ */
 int ai_easy_pick_move(const GomokuGame *game, int *out_row, int *out_col) {
   int row;
   int col;

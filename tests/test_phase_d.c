@@ -1,4 +1,5 @@
 #include "../include/config.h"
+#include "../include/functions.h"
 #include <stdio.h>
 
 static int g_total = 0;

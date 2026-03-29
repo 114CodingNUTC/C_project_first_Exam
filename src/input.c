@@ -1,4 +1,5 @@
 #include "../include/config.h"
+#include "../include/functions.h"
 #include "../include/messages.h"
 #include <conio.h>
 #include <ctype.h>
@@ -7,6 +8,13 @@
 #include <string.h>
 #include <windows.h>
 
+/**
+ * @brief 解析字母+數字格式座標（例如 a10）。
+ * @param text 原始輸入字串。
+ * @param out_row 輸出列索引。
+ * @param out_col 輸出行索引。
+ * @return 1 代表解析成功；0 代表格式不符。
+ */
 static int parse_letters_then_digits(const char *text, int *out_row,
                                      int *out_col) {
   int col;
@@ -25,6 +33,13 @@ static int parse_letters_then_digits(const char *text, int *out_row,
   return 1;
 }
 
+/**
+ * @brief 解析數字+字母格式座標（例如 10a）。
+ * @param text 原始輸入字串。
+ * @param out_row 輸出列索引。
+ * @param out_col 輸出行索引。
+ * @return 1 代表解析成功；0 代表格式不符。
+ */
 static int parse_digits_then_letters(const char *text, int *out_row,
                                      int *out_col) {
   int i;
@@ -47,6 +62,14 @@ static int parse_digits_then_letters(const char *text, int *out_row,
   return 1;
 }
 
+/**
+ * @brief 解析落子輸入並驗證是否在棋盤範圍內。
+ * @param text 原始輸入字串。
+ * @param board_size 棋盤邊長。
+ * @param out_row 輸出列索引。
+ * @param out_col 輸出行索引。
+ * @return 1 代表成功；0 代表無效輸入。
+ */
 int input_parse_move(const char *text, int board_size, int *out_row,
                      int *out_col) {
   char normalized[32];
@@ -73,6 +96,11 @@ int input_parse_move(const char *text, int board_size, int *out_row,
   return 1;
 }
 
+/**
+ * @brief 判斷按鍵是否可作為文字輸入。
+ * @param key 按鍵碼。
+ * @return 1 代表可輸入；0 代表忽略。
+ */
 static int is_input_char(int key) {
   if (isalnum((unsigned char)key))
     return 1;
@@ -81,6 +109,11 @@ static int is_input_char(int key) {
   return 0;
 }
 
+/**
+ * @brief 在游標位置插入一個字元。
+ * @param ui_state 目前 UI 狀態。
+ * @param key 要插入的按鍵碼。
+ */
 static void input_append_char(UIState *ui_state, int key) {
   if (ui_state->input_length >= CFG_INPUT_BUFFER_SIZE - 1)
     return;
@@ -94,6 +127,10 @@ static void input_append_char(UIState *ui_state, int key) {
   ui_state->board_dirty = 1;
 }
 
+/**
+ * @brief 刪除游標前一個字元（Backspace）。
+ * @param ui_state 目前 UI 狀態。
+ */
 static void input_pop_char(UIState *ui_state) {
   if (ui_state->input_cursor <= 0 || ui_state->input_length <= 0)
     return;
@@ -106,6 +143,10 @@ static void input_pop_char(UIState *ui_state) {
   ui_state->board_dirty = 1;
 }
 
+/**
+ * @brief 刪除游標所在字元（Delete）。
+ * @param ui_state 目前 UI 狀態。
+ */
 static void input_delete_char(UIState *ui_state) {
   if (ui_state->input_cursor >= ui_state->input_length)
     return;
@@ -117,6 +158,10 @@ static void input_delete_char(UIState *ui_state) {
   ui_state->board_dirty = 1;
 }
 
+/**
+ * @brief 將輸入游標向左移動一格。
+ * @param ui_state 目前 UI 狀態。
+ */
 static void input_move_left(UIState *ui_state) {
   if (ui_state->input_cursor > 0) {
     ui_state->input_cursor--;
@@ -124,6 +169,10 @@ static void input_move_left(UIState *ui_state) {
   }
 }
 
+/**
+ * @brief 將輸入游標向右移動一格。
+ * @param ui_state 目前 UI 狀態。
+ */
 static void input_move_right(UIState *ui_state) {
   if (ui_state->input_cursor < ui_state->input_length) {
     ui_state->input_cursor++;
@@ -131,6 +180,10 @@ static void input_move_right(UIState *ui_state) {
   }
 }
 
+/**
+ * @brief 清空輸入框內容與游標位置。
+ * @param ui_state 目前 UI 狀態。
+ */
 static void input_clear(UIState *ui_state) {
   ui_state->input_length = 0;
   ui_state->input_cursor = 0;
@@ -138,6 +191,13 @@ static void input_clear(UIState *ui_state) {
   ui_state->board_dirty = 1;
 }
 
+/**
+ * @brief 讀取單一數字選項並限制在範圍內。
+ * @param min_value 可接受最小值。
+ * @param max_value 可接受最大值。
+ * @param lang 語系。
+ * @return 使用者輸入且通過驗證的值。
+ */
 static int read_number_in_range(int min_value, int max_value, int lang) {
   int key;
   int value;
@@ -163,6 +223,11 @@ static int read_number_in_range(int min_value, int max_value, int lang) {
   }
 }
 
+/**
+ * @brief 讀取遊戲模式選擇。
+ * @param lang 語系。
+ * @return 1-4 的模式代碼。
+ */
 int input_choose_mode(int lang) {
   printf("%s\n", msg_get(lang, MSG_MENU_MODE));
   printf("1) %s\n", msg_get(lang, MSG_MODE_1V1));
@@ -173,6 +238,11 @@ int input_choose_mode(int lang) {
   return read_number_in_range(1, 4, lang);
 }
 
+/**
+ * @brief 讀取棋盤尺寸選擇。
+ * @param lang 語系。
+ * @return 對應的棋盤邊長常數。
+ */
 int input_choose_board_size(int lang) {
   printf("%s\n", msg_get(lang, MSG_MENU_BOARD));
   printf("1) %s\n", msg_get(lang, MSG_BOARD_9X9));
@@ -190,6 +260,11 @@ int input_choose_board_size(int lang) {
   }
 }
 
+/**
+ * @brief 讀取 AI 先後手設定。
+ * @param lang 語系。
+ * @return CFG_AI_TURN_PLAYER_FIRST 或 CFG_AI_TURN_AI_FIRST。
+ */
 int input_choose_ai_turn(int lang) {
   printf("%s\n", msg_get(lang, MSG_MENU_AI_TURN));
   printf("1) %s\n", msg_get(lang, MSG_AI_TURN_PLAYER_FIRST));
@@ -199,6 +274,11 @@ int input_choose_ai_turn(int lang) {
                               lang);
 }
 
+/**
+ * @brief 讀取暫停選單操作。
+ * @param lang 語系。
+ * @return 1-4 的暫停操作代碼。
+ */
 int input_choose_pause_action(int lang) {
   printf("\n%s\n", msg_get(lang, MSG_MENU_PAUSE));
   printf("1) %s\n", msg_get(lang, MSG_PAUSE_CONTINUE));
@@ -209,12 +289,25 @@ int input_choose_pause_action(int lang) {
   return read_number_in_range(1, 4, lang);
 }
 
+/**
+ * @brief 讀取退出確認。
+ * @param lang 語系。
+ * @return 1 代表確認退出；0 代表取消。
+ */
 int input_confirm_exit(int lang) {
   printf("%s\n", msg_get(lang, MSG_CONFIRM_EXIT));
   printf("> ");
   return read_number_in_range(1, 2, lang) == 1;
 }
 
+/**
+ * @brief 讀取玩家落子行為（文字輸入或方向鍵游標）。
+ * @param game 當前遊戲狀態。
+ * @param ui_state 目前 UI 狀態。
+ * @param out_row 輸出列索引。
+ * @param out_col 輸出行索引。
+ * @return 1 代表取得落子；0 代表使用者觸發暫停。
+ */
 int input_read_player_move(const GomokuGame *game, UIState *ui_state,
                            int *out_row, int *out_col) {
   int key;

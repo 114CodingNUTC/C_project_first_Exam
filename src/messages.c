@@ -1,5 +1,6 @@
 #include "../include/messages.h"
 #include "../include/config.h"
+#include "../include/functions.h"
 
 typedef struct MessagePair {
   int key;
@@ -62,6 +63,12 @@ static const MessagePair k_messages[] = {
     {MSG_AI_TURN_PLAYER_FIRST, "玩家先手", "Player first"},
     {MSG_AI_TURN_AI_FIRST, "AI 先手", "AI first"}};
 
+/**
+ * @brief 依語系與鍵值查詢對應訊息字串。
+ * @param lang 語系代碼。
+ * @param key 訊息鍵值。
+ * @return 對應字串；找不到時回傳預設 unknown 訊息。
+ */
 const char *msg_get(int lang, int key) {
   int i;
   int total;

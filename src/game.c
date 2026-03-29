@@ -1,5 +1,6 @@
 #include "../include/config.h"
 #include "../include/events.h"
+#include "../include/functions.h"
 #include "../include/messages.h"
 #include <conio.h>
 #include <stdio.h>
@@ -7,8 +8,20 @@
 #include <time.h>
 #include <windows.h>
 
+/**
+ * @brief 取得目前毫秒時間戳。
+ * @return 從系統啟動至今的毫秒數。
+ */
 static long long now_ms(void) { return GetTickCount64(); }
 
+/**
+ * @brief 依照模式選擇對應 AI 並計算下一手。
+ * @param game 當前遊戲狀態。
+ * @param mode 遊戲模式編號。
+ * @param out_row 輸出列索引。
+ * @param out_col 輸出行索引。
+ * @return 1 代表成功取得落子位置；0 代表失敗。
+ */
 static int handle_ai_turn(const GomokuGame *game, int mode, int *out_row,
                           int *out_col) {
   if (mode == 2)
@@ -20,11 +33,21 @@ static int handle_ai_turn(const GomokuGame *game, int mode, int *out_row,
   return 0;
 }
 
+/**
+ * @brief 輸出事件追蹤訊息。
+ * @param lang 語系。
+ * @param event_code 事件代碼。
+ */
 static void trace_event(int lang, int event_code) {
   printf(msg_get(lang, MSG_TRACE_EVENT_FMT), event_code);
   printf("\n");
 }
 
+/**
+ * @brief 重設整局狀態為開局。
+ * @param game 遊戲狀態物件。
+ * @param board_size 棋盤邊長。
+ */
 void game_reset(GomokuGame *game, int board_size) {
   int i;
 
@@ -45,6 +68,13 @@ void game_reset(GomokuGame *game, int board_size) {
   }
 }
 
+/**
+ * @brief 同步設定事件與訊息輸出值。
+ * @param out_event_code 事件輸出指標，可為 0。
+ * @param out_message_key 訊息鍵輸出指標，可為 0。
+ * @param event_code 要寫入的事件碼。
+ * @param msg_key 要寫入的訊息鍵。
+ */
 static void set_output(int *out_event_code, int *out_message_key,
                        int event_code, int msg_key) {
   if (out_event_code != 0)
@@ -53,6 +83,16 @@ static void set_output(int *out_event_code, int *out_message_key,
     *out_message_key = msg_key;
 }
 
+/**
+ * @brief 嘗試落子並回傳完整規則判定結果。
+ * @param game 遊戲狀態物件。
+ * @param player 嘗試落子的玩家。
+ * @param row 目標列索引。
+ * @param col 目標行索引。
+ * @param out_event_code 事件輸出指標，可為 0。
+ * @param out_message_key 訊息輸出指標，可為 0。
+ * @return PLACE_OK 或對應的 PLACE_ERR_* 錯誤碼。
+ */
 int try_place_stone(GomokuGame *game, int player, int row, int col,
                     int *out_event_code, int *out_message_key) {
   int line_count;
@@ -124,6 +164,14 @@ int try_place_stone(GomokuGame *game, int player, int row, int col,
   return PLACE_OK;
 }
 
+/**
+ * @brief 執行單場對局主迴圈。
+ * @param mode 遊戲模式編號。
+ * @param board_size 棋盤邊長。
+ * @param ai_turn_choice AI 先後手設定。
+ * @param lang 語系。
+ * @return GAME_LOOP_BACK_TO_MENU 或 GAME_LOOP_EXIT_APP。
+ */
 int game_run_loop(int mode, int board_size, int ai_turn_choice, int lang) {
   GomokuGame game;
   UIState ui_state;

@@ -54,6 +54,4 @@
 #define MSG_AI_TURN_PLAYER_FIRST 67
 #define MSG_AI_TURN_AI_FIRST 68
 
-const char *msg_get(int lang, int key);
-
 #endif
