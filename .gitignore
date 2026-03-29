@@ -53,3 +53,4 @@ dkms.conf
 
 # Generated files
 !game.exe
+*.layout
