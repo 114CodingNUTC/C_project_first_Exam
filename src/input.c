@@ -1,4 +1,5 @@
 #include "../include/config.h"
+#include "../include/events.h"
 #include "../include/functions.h"
 #include "../include/messages.h"
 #include <conio.h>
@@ -306,7 +307,7 @@ int input_confirm_exit(int lang) {
  * @param ui_state 目前 UI 狀態。
  * @param out_row 輸出列索引。
  * @param out_col 輸出行索引。
- * @return 1 代表取得落子；0 代表使用者觸發暫停。
+ * @return PLAYER_ACTION_* 動作碼（落子/暫停/投降）。
  */
 int input_read_player_move(const GomokuGame *game, UIState *ui_state,
                            int *out_row, int *out_col) {
@@ -322,7 +323,10 @@ int input_read_player_move(const GomokuGame *game, UIState *ui_state,
       ExitProcess(0);
 
     if (key == CFG_KEY_ESC)
-      return 0;
+      return PLAYER_ACTION_PAUSE;
+
+    if (key == CFG_KEY_TAB)
+      return PLAYER_ACTION_SURRENDER;
 
     if (key == CFG_KEY_ENTER) {
       if (ui_state->input_length > 0) {
@@ -330,7 +334,7 @@ int input_read_player_move(const GomokuGame *game, UIState *ui_state,
                              out_col)) {
           ui_move_cursor(ui_state, *out_row, *out_col, game->board_size);
           input_clear(ui_state);
-          return 1;
+          return PLAYER_ACTION_PLACE;
         }
         now_ms = GetTickCount64();
         ui_set_message(ui_state, MSG_INVALID_INPUT, 1, now_ms,
@@ -339,7 +343,7 @@ int input_read_player_move(const GomokuGame *game, UIState *ui_state,
       }
       *out_row = ui_state->cursor_row;
       *out_col = ui_state->cursor_col;
-      return 1;
+      return PLAYER_ACTION_PLACE;
     }
 
     if (key == CFG_KEY_BACKSPACE) {
@@ -379,5 +383,171 @@ int input_read_player_move(const GomokuGame *game, UIState *ui_state,
 
     if (is_input_char(key))
       input_append_char(ui_state, key);
+  }
+}
+
+/**
+ * @brief 使用視覺化菜單選擇遊戲模式（含光標上下移動）。
+ * @param lang 語系。
+ * @return 1-4 的模式代碼。
+ */
+int input_choose_mode_visual(int lang) {
+  int current_selection = 0;
+  int key;
+  int ext;
+  const char *mode_options[] = {
+      msg_get(lang, MSG_MODE_1V1), msg_get(lang, MSG_MODE_1V_AI_EASY),
+      msg_get(lang, MSG_MODE_1V_AI_MEDIUM), msg_get(lang, MSG_MODE_1V_AI_HARD)};
+
+  system(CFG_CLEAR_SCREEN_CMD);
+  ui_hide_cursor();
+
+  /* 初始繪製菜單（只繪製一次） */
+  ui_draw_menu_title();
+  ui_draw_menu_options(current_selection, 4, mode_options);
+  ui_draw_menu_hint(msg_get(lang, MSG_MENU_HINT));
+
+  while (1) {
+    if (_kbhit()) {
+      key = _getch();
+
+      if (key == CFG_KEY_CTRL_C)
+        ExitProcess(0);
+
+      if (key == CFG_KEY_EXTENDED_0 || key == CFG_KEY_EXTENDED_224) {
+        ext = _getch();
+        if (ext == CFG_KEY_UP)
+          current_selection = current_selection > 0 ? current_selection - 1 : 3;
+        if (ext == CFG_KEY_DOWN)
+          current_selection = current_selection < 3 ? current_selection + 1 : 0;
+
+        /* 只在獲得輸入時重繪 */
+        system(CFG_CLEAR_SCREEN_CMD);
+        ui_draw_menu_title();
+        ui_draw_menu_options(current_selection, 4, mode_options);
+        ui_draw_menu_hint(msg_get(lang, MSG_MENU_HINT));
+      } else if (key == 'w' || key == 'W') {
+        current_selection = 0;
+        system(CFG_CLEAR_SCREEN_CMD);
+        ui_draw_menu_title();
+        ui_draw_menu_options(current_selection, 4, mode_options);
+        ui_draw_menu_hint(msg_get(lang, MSG_MENU_HINT));
+      } else if (key == 's' || key == 'S') {
+        current_selection = 0;
+        system(CFG_CLEAR_SCREEN_CMD);
+        ui_draw_menu_title();
+        ui_draw_menu_options(current_selection, 4, mode_options);
+        ui_draw_menu_hint(msg_get(lang, MSG_MENU_HINT));
+      } else if (key == CFG_KEY_ENTER) {
+        return current_selection + 1;
+      }
+    }
+
+    Sleep(50);
+  }
+}
+
+/**
+ * @brief 使用視覺化菜單選擇棋盤大小（含光標上下移動）。
+ * @param lang 語系。
+ * @return 對應的棋盤邊長常數。
+ */
+int input_choose_board_size_visual(int lang) {
+  int current_selection = 1;
+  int key;
+  int ext;
+  const char *size_options[] = {msg_get(lang, MSG_BOARD_9X9),
+                                msg_get(lang, MSG_BOARD_15X15),
+                                msg_get(lang, MSG_BOARD_19X19)};
+
+  system(CFG_CLEAR_SCREEN_CMD);
+  ui_hide_cursor();
+
+  /* 初始繪製菜單（只繪製一次） */
+  ui_draw_menu_title();
+  ui_draw_menu_options(current_selection, 3, size_options);
+  ui_draw_menu_hint(msg_get(lang, MSG_MENU_HINT));
+
+  while (1) {
+    if (_kbhit()) {
+      key = _getch();
+
+      if (key == CFG_KEY_CTRL_C)
+        ExitProcess(0);
+
+      if (key == CFG_KEY_EXTENDED_0 || key == CFG_KEY_EXTENDED_224) {
+        ext = _getch();
+        if (ext == CFG_KEY_UP)
+          current_selection = current_selection > 0 ? current_selection - 1 : 2;
+        if (ext == CFG_KEY_DOWN)
+          current_selection = current_selection < 2 ? current_selection + 1 : 0;
+
+        /* 只在獲得輸入時重繪 */
+        system(CFG_CLEAR_SCREEN_CMD);
+        ui_draw_menu_title();
+        ui_draw_menu_options(current_selection, 3, size_options);
+        ui_draw_menu_hint(msg_get(lang, MSG_MENU_HINT));
+      } else if (key == CFG_KEY_ENTER) {
+        switch (current_selection) {
+        case 0:
+          return CFG_BOARD_SIZE_9;
+        case 1:
+          return CFG_BOARD_SIZE_15;
+        default:
+          return CFG_BOARD_SIZE_19;
+        }
+      }
+    }
+
+    Sleep(50);
+  }
+}
+
+/**
+ * @brief 使用視覺化菜單選擇 AI 先後手（含光標上下移動）。
+ * @param lang 語系。
+ * @return CFG_AI_TURN_PLAYER_FIRST 或 CFG_AI_TURN_AI_FIRST。
+ */
+int input_choose_ai_turn_visual(int lang) {
+  int current_selection = 0;
+  int key;
+  int ext;
+  const char *turn_options[] = {msg_get(lang, MSG_AI_TURN_PLAYER_FIRST),
+                                msg_get(lang, MSG_AI_TURN_AI_FIRST)};
+
+  system(CFG_CLEAR_SCREEN_CMD);
+  ui_hide_cursor();
+
+  /* 初始繪製菜單（只繪製一次） */
+  ui_draw_menu_title();
+  ui_draw_menu_options(current_selection, 2, turn_options);
+  ui_draw_menu_hint(msg_get(lang, MSG_MENU_HINT));
+
+  while (1) {
+    if (_kbhit()) {
+      key = _getch();
+
+      if (key == CFG_KEY_CTRL_C)
+        ExitProcess(0);
+
+      if (key == CFG_KEY_EXTENDED_0 || key == CFG_KEY_EXTENDED_224) {
+        ext = _getch();
+        if (ext == CFG_KEY_UP)
+          current_selection = current_selection > 0 ? current_selection - 1 : 1;
+        if (ext == CFG_KEY_DOWN)
+          current_selection = current_selection < 1 ? current_selection + 1 : 0;
+
+        /* 只在獲得輸入時重繪 */
+        system(CFG_CLEAR_SCREEN_CMD);
+        ui_draw_menu_title();
+        ui_draw_menu_options(current_selection, 2, turn_options);
+        ui_draw_menu_hint(msg_get(lang, MSG_MENU_HINT));
+      } else if (key == CFG_KEY_ENTER) {
+        return current_selection == 0 ? CFG_AI_TURN_PLAYER_FIRST
+                                      : CFG_AI_TURN_AI_FIRST;
+      }
+    }
+
+    Sleep(50);
   }
 }

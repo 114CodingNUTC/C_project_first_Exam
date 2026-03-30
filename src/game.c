@@ -165,6 +165,49 @@ int try_place_stone(GomokuGame *game, int player, int row, int col,
 }
 
 /**
+ * @brief 讓當前玩家投降並直接結束對局。
+ * @param game 遊戲狀態物件。
+ * @param player 投降玩家。
+ * @param out_event_code 事件輸出指標，可為 0。
+ * @param out_message_key 訊息輸出指標，可為 0。
+ * @return PLACE_OK 或對應的 PLACE_ERR_* 錯誤碼。
+ */
+int game_surrender(GomokuGame *game, int player, int *out_event_code,
+                   int *out_message_key) {
+  if (game == 0) {
+    set_output(out_event_code, out_message_key, EV_ERROR, MSG_INTERNAL_ERROR);
+    return PLACE_ERR_INVALID_ARG;
+  }
+  if (player != STONE_BLACK && player != STONE_WHITE) {
+    set_output(out_event_code, out_message_key, EV_ERROR, MSG_INVALID_INPUT);
+    return PLACE_ERR_INVALID_ARG;
+  }
+  if (game->game_over) {
+    set_output(out_event_code, out_message_key, EV_INVALID_MOVE, MSG_GAME_OVER);
+    return PLACE_ERR_GAME_OVER;
+  }
+  if (player != game->current_player) {
+    set_output(out_event_code, out_message_key, EV_INVALID_MOVE,
+               MSG_NOT_YOUR_TURN);
+    return PLACE_ERR_NOT_CURRENT_PLAYER;
+  }
+
+  game->game_over = 1;
+  game->win_line_count = 0;
+  if (player == STONE_BLACK) {
+    game->winner = STONE_WHITE;
+    set_output(out_event_code, out_message_key, EV_SURRENDER,
+               MSG_SURRENDER_BLACK);
+  } else {
+    game->winner = STONE_BLACK;
+    set_output(out_event_code, out_message_key, EV_SURRENDER,
+               MSG_SURRENDER_WHITE);
+  }
+
+  return PLACE_OK;
+}
+
+/**
  * @brief 執行單場對局主迴圈。
  * @param mode 遊戲模式編號。
  * @param board_size 棋盤邊長。
@@ -180,8 +223,10 @@ int game_run_loop(int mode, int board_size, int ai_turn_choice, int lang) {
   int event_code;
   int msg_key;
   int player;
+  int player_action;
   int state;
   int pause_action;
+  int end_message_key;
 
   srand((unsigned int)time(0));
 
@@ -192,6 +237,7 @@ int game_run_loop(int mode, int board_size, int ai_turn_choice, int lang) {
   ui_set_message(&ui_state, MSG_READY, 0, now_ms(), CFG_MESSAGE_HOLD_MS);
   trace_event(lang, EV_READY);
   state = GS_IN_GAME;
+  end_message_key = MSG_DRAW;
 
   while (1) {
     if (state == GS_IN_GAME) {
@@ -202,12 +248,30 @@ int game_run_loop(int mode, int board_size, int ai_turn_choice, int lang) {
             trace_event(lang, EV_BACK_TO_MENU);
             break;
           }
-        } else if (!input_read_player_move(&game, &ui_state, &row, &col)) {
-          state = GS_PAUSED;
-          ui_set_message(&ui_state, MSG_PAUSED, 0, now_ms(),
-                         CFG_MESSAGE_HOLD_MS);
-          trace_event(lang, EV_PAUSED);
-          continue;
+        } else {
+          player_action = input_read_player_move(&game, &ui_state, &row, &col);
+          if (player_action == PLAYER_ACTION_PAUSE) {
+            state = GS_PAUSED;
+            ui_set_message(&ui_state, MSG_PAUSED, 0, now_ms(),
+                           CFG_MESSAGE_HOLD_MS);
+            trace_event(lang, EV_PAUSED);
+            continue;
+          }
+          if (player_action == PLAYER_ACTION_SURRENDER) {
+            player = game.current_player;
+            if (game_surrender(&game, player, &event_code, &msg_key) !=
+                PLACE_OK) {
+              ui_set_message(&ui_state, msg_key, 1, now_ms(),
+                             CFG_MESSAGE_HOLD_MS);
+              trace_event(lang, event_code);
+              continue;
+            }
+            end_message_key = msg_key;
+            ui_set_message(&ui_state, msg_key, 0, now_ms(),
+                           CFG_MESSAGE_HOLD_MS);
+            trace_event(lang, event_code);
+            continue;
+          }
         }
 
         player = game.current_player;
@@ -220,18 +284,15 @@ int game_run_loop(int mode, int board_size, int ai_turn_choice, int lang) {
 
         ui_set_message(&ui_state, msg_key, event_code == EV_INVALID_MOVE,
                        now_ms(), CFG_MESSAGE_HOLD_MS);
+        if (game.game_over)
+          end_message_key = msg_key;
         ui_move_cursor(&ui_state, row, col, game.board_size);
         trace_event(lang, event_code);
         continue;
       }
 
       ui_render_full(&game, &ui_state, lang);
-      if (game.winner == STONE_BLACK)
-        ui_show_message(MSG_WIN_BLACK);
-      else if (game.winner == STONE_WHITE)
-        ui_show_message(MSG_WIN_WHITE);
-      else
-        ui_show_message(MSG_DRAW);
+      ui_show_message(end_message_key);
       printf("%s\n", msg_get(lang, MSG_PRESS_ANY_KEY_BACK_MENU));
       _getch();
       state = GS_MAIN_MENU;

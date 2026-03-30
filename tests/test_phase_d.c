@@ -51,6 +51,25 @@ static void test_ai_easy(void) {
   game.current_player = STONE_BLACK;
   ok = !ai_easy_pick_move(&game, &row, &col);
   record_result("easy returns false on full board", ok);
+
+  board_init(&game, CFG_BOARD_SIZE_9);
+  board_place_stone(&game, STONE_BLACK, 4, 0);
+  board_place_stone(&game, STONE_WHITE, 4, 1);
+  board_place_stone(&game, STONE_WHITE, 4, 2);
+  board_place_stone(&game, STONE_WHITE, 4, 3);
+  game.current_player = STONE_BLACK;
+  ok = ai_easy_pick_move(&game, &row, &col) && row == 4 && col == 4;
+  record_result("easy blocks opponent three-to-four threat", ok);
+
+  board_init(&game, CFG_BOARD_SIZE_9);
+  board_place_stone(&game, STONE_BLACK, 4, 1);
+  board_place_stone(&game, STONE_BLACK, 4, 2);
+  board_place_stone(&game, STONE_BLACK, 4, 3);
+  board_place_stone(&game, STONE_WHITE, 5, 5);
+  game.current_player = STONE_BLACK;
+  ok = ai_easy_pick_move(&game, &row, &col) &&
+       (row == 4 && col == 0 || row == 4 && col == 4);
+  record_result("easy extends own three to four", ok);
 }
 
 static void test_ai_medium(void) {
@@ -87,6 +106,25 @@ static void test_ai_medium(void) {
   ok =
       ai_medium_pick_move(&game, &row, &col) && board_is_empty(&game, row, col);
   record_result("medium returns legal move on normal state", ok);
+
+  board_init(&game, CFG_BOARD_SIZE_9);
+  board_place_stone(&game, STONE_BLACK, 4, 0);
+  board_place_stone(&game, STONE_WHITE, 4, 1);
+  board_place_stone(&game, STONE_WHITE, 4, 2);
+  board_place_stone(&game, STONE_WHITE, 4, 3);
+  game.current_player = STONE_BLACK;
+  ok = ai_medium_pick_move(&game, &row, &col) && row == 4 && col == 4;
+  record_result("medium blocks opponent three-to-four threat", ok);
+
+  board_init(&game, CFG_BOARD_SIZE_9);
+  board_place_stone(&game, STONE_BLACK, 4, 1);
+  board_place_stone(&game, STONE_BLACK, 4, 2);
+  board_place_stone(&game, STONE_BLACK, 4, 3);
+  board_place_stone(&game, STONE_WHITE, 5, 5);
+  game.current_player = STONE_BLACK;
+  ok = ai_medium_pick_move(&game, &row, &col) &&
+       (row == 4 && col == 0 || row == 4 && col == 4);
+  record_result("medium extends own three to four", ok);
 }
 
 static void test_ai_hard(void) {
@@ -122,6 +160,25 @@ static void test_ai_hard(void) {
   game.current_player = STONE_WHITE;
   ok = ai_hard_pick_move(&game, &row, &col) && board_is_empty(&game, row, col);
   record_result("hard returns legal move on normal state", ok);
+
+  board_init(&game, CFG_BOARD_SIZE_9);
+  board_place_stone(&game, STONE_BLACK, 4, 0);
+  board_place_stone(&game, STONE_WHITE, 4, 1);
+  board_place_stone(&game, STONE_WHITE, 4, 2);
+  board_place_stone(&game, STONE_WHITE, 4, 3);
+  game.current_player = STONE_BLACK;
+  ok = ai_hard_pick_move(&game, &row, &col) && row == 4 && col == 4;
+  record_result("hard blocks opponent three-to-four threat", ok);
+
+  board_init(&game, CFG_BOARD_SIZE_9);
+  board_place_stone(&game, STONE_BLACK, 4, 1);
+  board_place_stone(&game, STONE_BLACK, 4, 2);
+  board_place_stone(&game, STONE_BLACK, 4, 3);
+  board_place_stone(&game, STONE_WHITE, 5, 5);
+  game.current_player = STONE_BLACK;
+  ok = ai_hard_pick_move(&game, &row, &col) &&
+       (row == 4 && col == 0 || row == 4 && col == 4);
+  record_result("hard extends own three to four", ok);
 }
 
 int main(void) {

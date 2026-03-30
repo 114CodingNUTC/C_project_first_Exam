@@ -16,6 +16,10 @@ static const MessagePair k_messages[] = {
     {MSG_WIN_BLACK, "黑子獲勝", "Black wins"},
     {MSG_WIN_WHITE, "白子獲勝", "White wins"},
     {MSG_DRAW, "和局", "Draw"},
+    {MSG_SURRENDER_BLACK, "黑子投降，白子獲勝",
+     "Black surrendered, White wins"},
+    {MSG_SURRENDER_WHITE, "白子投降，黑子獲勝",
+     "White surrendered, Black wins"},
     {MSG_INVALID_INPUT, "輸入無效", "Invalid input"},
     {MSG_OUT_OF_BOUNDS, "落子超出邊界", "Move out of bounds"},
     {MSG_CELL_OCCUPIED, "該位置已有棋子", "Cell already occupied"},
@@ -34,8 +38,8 @@ static const MessagePair k_messages[] = {
     {MSG_MENU_AI_TURN, "選擇 AI 先後手", "Choose AI turn order"},
     {MSG_INPUT_HINT, "輸入位置 (如 a1) 或方向鍵移動",
      "Enter position (e.g. a1) or use arrow keys"},
-    {MSG_MOVE_HINT, "ESC暫停 | 方向鍵移動 | Enter落子",
-     "ESC pause | Arrows move | Enter place"},
+    {MSG_MOVE_HINT, "ESC暫停 | Tab投降 | 方向鍵移動 | Enter落子",
+     "ESC pause | Tab surrender | Arrows move | Enter place"},
     {MSG_POSITION_HINT, "位置: %c%d", "Position: %c%d"},
     {MSG_PAUSED, "遊戲已暫停", "Game paused"},
     {MSG_MENU_PAUSE, "暫停選單", "Pause menu"},
@@ -61,7 +65,13 @@ static const MessagePair k_messages[] = {
     {MSG_UI_MSG_LABEL_FMT, "[訊息] %s", "[MSG] %s"},
     {MSG_BOARD_TITLE_FMT, "棋盤 %dx%d", "Board %dx%d"},
     {MSG_AI_TURN_PLAYER_FIRST, "玩家先手", "Player first"},
-    {MSG_AI_TURN_AI_FIRST, "AI 先手", "AI first"}};
+    {MSG_AI_TURN_AI_FIRST, "AI 先手", "AI first"},
+    {MSG_MENU_HINT, "按下 [上/下] 鍵選擇, [ENTER] 開始",
+     "Use [UP/DOWN] to Select, [ENTER] to Start"},
+    {MSG_MENU_MODE_LABEL, "選擇遊戲模式", "Select Game Mode"},
+    {MSG_MENU_BOARD_LABEL, "選擇棋盤大小", "Select Board Size"},
+    {MSG_MENU_AI_TURN_LABEL, "選擇 AI 先後手", "Choose AI Turn Order"},
+    {MSG_MENU_SUBTITLE, "=== 五 子 棋 ===", "=== GOMOKU ==="}};
 
 /**
  * @brief 依語系與鍵值查詢對應訊息字串。

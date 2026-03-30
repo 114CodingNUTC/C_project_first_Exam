@@ -1,6 +1,6 @@
 #include "config.h"
-#include "functions.h"
 #include "events.h"
+#include "functions.h"
 #include "messages.h"
 #include <stdio.h>
 
@@ -23,7 +23,8 @@ static void test_state_and_event_constants(void) {
                     GS_PAUSED != GS_CONFIRM_EXIT);
 
   record_result("phase E event constants are valid",
-                EV_PAUSED > EV_INVALID_MOVE && EV_RESUMED > EV_PAUSED &&
+                EV_SURRENDER > EV_STONE_PLACED && EV_WIN > EV_SURRENDER &&
+                    EV_PAUSED > EV_INVALID_MOVE && EV_RESUMED > EV_PAUSED &&
                     EV_RESTARTED > EV_RESUMED && EV_EXIT_APP > EV_EXIT_CONFIRM);
 
   record_result("game loop return constants are valid",
@@ -61,11 +62,27 @@ static void test_round_flow_event_sequence(void) {
                                                      game.game_over == 1);
 }
 
+static void test_surrender_flow(void) {
+  GomokuGame game;
+  int event_code;
+  int message_key;
+  int result;
+
+  game_reset(&game, CFG_BOARD_SIZE_9);
+  result = game_surrender(&game, STONE_BLACK, &event_code, &message_key);
+  record_result("surrender: event emitted",
+                result == PLACE_OK && event_code == EV_SURRENDER);
+  record_result("surrender: winner switched to opponent",
+                game.game_over == 1 && game.winner == STONE_WHITE &&
+                    message_key == MSG_SURRENDER_BLACK);
+}
+
 int main(void) {
   printf("=== Phase E Integration Test ===\n");
 
   test_state_and_event_constants();
   test_round_flow_event_sequence();
+  test_surrender_flow();
 
   printf("\n=== Phase E Summary ===\n");
   printf("Passed: %d/%d\n", g_pass, g_total);

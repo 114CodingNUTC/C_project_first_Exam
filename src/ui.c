@@ -205,7 +205,7 @@ void ui_render_full(const GomokuGame *game, const UIState *state, int lang) {
     APPEND(msg_get(lang, MSG_UI_STATUS_WHITE_FMT), game->move_count);
   APPEND("\n\n");
 
-  APPEND("   ");
+  APPEND("  ");
   for (col = 0; col < game->board_size; col++)
     APPEND(" %c ", 'A' + col);
   APPEND("\n");
@@ -234,12 +234,12 @@ void ui_render_full(const GomokuGame *game, const UIState *state, int lang) {
           APPEND(" ");
 
         if (is_last) {
-        if (stone == STONE_BLACK)
-          APPEND("%c", CFG_STONE_CHAR_BLACK_LAST);
-        else if (stone == STONE_WHITE)
-          APPEND("%c", CFG_STONE_CHAR_WHITE_LAST);
-        else
-          APPEND("%c", CFG_STONE_CHAR_EMPTY);
+          if (stone == STONE_BLACK)
+            APPEND("%c", CFG_STONE_CHAR_BLACK_LAST);
+          else if (stone == STONE_WHITE)
+            APPEND("%c", CFG_STONE_CHAR_WHITE_LAST);
+          else
+            APPEND("%c", CFG_STONE_CHAR_EMPTY);
         } else {
           if (stone == STONE_BLACK)
             APPEND("%c", CFG_STONE_CHAR_BLACK);
@@ -258,7 +258,7 @@ void ui_render_full(const GomokuGame *game, const UIState *state, int lang) {
     APPEND("%2d\n", row + 1);
   }
 
-  APPEND("   ");
+  APPEND("  ");
   for (col = 0; col < game->board_size; col++)
     APPEND(" %c ", 'A' + col);
   APPEND("\n");
@@ -294,4 +294,186 @@ void ui_render_full(const GomokuGame *game, const UIState *state, int lang) {
   fflush(stdout);
 
 #undef APPEND
+}
+
+/**
+ * @brief 設定主控台文字顏色。
+ * @param color 顏色代碼 (Windows 控制台顏色)。
+ */
+void ui_set_color(int color) {
+  HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
+  if (console != INVALID_HANDLE_VALUE && console != 0)
+    SetConsoleTextAttribute(console, (WORD)color);
+}
+
+/**
+ * @brief 定位游標到指定位置 (X: 列, Y: 列)。
+ * @param x 欄位置。
+ * @param y 列位置。
+ */
+void ui_gotoxy(int x, int y) {
+  COORD coord;
+  HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
+  coord.X = (SHORT)x;
+  coord.Y = (SHORT)y;
+  if (console != INVALID_HANDLE_VALUE && console != 0)
+    SetConsoleCursorPosition(console, coord);
+}
+
+/**
+ * @brief 隱藏主控台游標。
+ */
+void ui_hide_cursor(void) {
+  HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
+  CONSOLE_CURSOR_INFO info;
+  if (console == INVALID_HANDLE_VALUE || console == 0)
+    return;
+  info.dwSize = 100;
+  info.bVisible = FALSE;
+  SetConsoleCursorInfo(console, &info);
+}
+
+/**
+ * @brief 顯示主控台游標。
+ */
+void ui_show_cursor(void) {
+  HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
+  CONSOLE_CURSOR_INFO info;
+  if (console == INVALID_HANDLE_VALUE || console == 0)
+    return;
+  info.dwSize = 100;
+  info.bVisible = TRUE;
+  SetConsoleCursorInfo(console, &info);
+}
+
+static int ui_utf8_display_width(const char *text);
+static int ui_center_x_for_text(const char *text, int extra_width);
+
+/**
+ * @brief 繪製選單標題 (ASCII Art GOMOKU)。
+ */
+void ui_draw_menu_title(void) {
+  const char *subtitle;
+
+  ui_set_color(CFG_COLOR_CYAN);
+  ui_gotoxy(0, CFG_MENU_TITLE_ROW);
+  printf(
+      "     [  ______   ______   .___  ___.   ______    __  ___  __    __   ]\n"
+      "     [ / ___  | /  __  \\  |   \\/   |  /  __  \\  |  |/  / |  |  |  |  "
+      "]\n"
+      "     [| |   \\_||  |  |  | |  \\  /  | |  |  |  | |  '  /  |  |  |  |  "
+      "]\n"
+      "     [| |  ___ |  |  |  | |  |\\/|  | |  |  |  | |    |   |  |  |  |  "
+      "]\n"
+      "     [| |__/  ||  `--'  | |  |  |  | |  `--'  | |  .  \\  |  `--'  |  "
+      "]\n"
+      "     [ \\______| \\______/  |__|  |__|  \\______/  |__|\\__\\  "
+      "\\______/   ]");
+
+  subtitle = msg_get(LANG_DEFAULT, MSG_MENU_SUBTITLE);
+  ui_set_color(CFG_COLOR_YELLOW);
+  ui_gotoxy(ui_center_x_for_text(subtitle, 0), CFG_MENU_SUBTITLE_ROW);
+  printf("%s", subtitle);
+
+  ui_set_color(CFG_COLOR_WHITE);
+}
+
+/**
+ * @brief 計算 UTF-8 字串在主控台的大致顯示寬度。
+ * @param text UTF-8 字串。
+ * @return 估算的欄位寬度。
+ */
+static int ui_utf8_display_width(const char *text) {
+  int width;
+  const unsigned char *p;
+
+  if (text == 0)
+    return 0;
+
+  width = 0;
+  p = (const unsigned char *)text;
+
+  while (*p != '\0') {
+    if (*p < 0x80) {
+      width += 1;
+      p += 1;
+    } else if ((*p & 0xF0) == 0xE0 && p[1] != '\0' && p[2] != '\0') {
+      width += 2;
+      p += 3;
+    } else if ((*p & 0xE0) == 0xC0 && p[1] != '\0') {
+      width += 1;
+      p += 2;
+    } else if ((*p & 0xF8) == 0xF0 && p[1] != '\0' && p[2] != '\0' &&
+               p[3] != '\0') {
+      width += 2;
+      p += 4;
+    } else {
+      width += 1;
+      p += 1;
+    }
+  }
+
+  return width;
+}
+
+/**
+ * @brief 依文字顯示寬度計算置中 X 座標。
+ * @param text 目標文字。
+ * @param extra_width 文字前後固定符號的額外寬度。
+ * @return 置中後的 X。
+ */
+static int ui_center_x_for_text(const char *text, int extra_width) {
+  int total_width;
+  int x;
+
+  total_width = ui_utf8_display_width(text) + extra_width;
+  x = (CFG_MENU_CONSOLE_WIDTH - total_width) / 2;
+  if (x < 0)
+    return 0;
+  return x;
+}
+
+/**
+ * @brief 繪製選單選項。
+ * @param current_selection 當前選中選項 (0-based)。
+ * @param option_count 選項總數。
+ * @param option_texts 選項文本陣列。
+ */
+void ui_draw_menu_options(int current_selection, int option_count,
+                          const char **option_texts) {
+  int i;
+  int row = CFG_MENU_OPTION1_ROW;
+  int x;
+
+  if (option_texts == 0 || option_count <= 0)
+    return;
+
+  for (i = 0; i < option_count; i++) {
+    x = ui_center_x_for_text(option_texts[i], 6);
+    ui_gotoxy(x, row + (i * 2));
+
+    if (i == current_selection) {
+      ui_set_color(CFG_COLOR_RED);
+      printf(">> %s <<", option_texts[i]);
+    } else {
+      ui_set_color(CFG_COLOR_WHITE);
+      printf("   %s   ", option_texts[i]);
+    }
+  }
+
+  ui_set_color(CFG_COLOR_WHITE);
+}
+
+/**
+ * @brief 繪製菜單提示文本。
+ * @param hint_text 提示文本。
+ */
+void ui_draw_menu_hint(const char *hint_text) {
+  int x;
+
+  ui_set_color(CFG_COLOR_WHITE);
+  x = ui_center_x_for_text(hint_text, 0);
+  ui_gotoxy(x, CFG_MENU_HINT_ROW);
+  if (hint_text != 0)
+    printf("%s", hint_text);
 }

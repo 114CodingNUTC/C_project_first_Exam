@@ -1,6 +1,6 @@
 #include "config.h"
-#include "functions.h"
 #include "events.h"
+#include "functions.h"
 #include "messages.h"
 #include <stdio.h>
 #include <string.h>
@@ -113,10 +113,10 @@ static void test_smoke_win_draw_invalid(void) {
 
 static void test_event_and_message_centers(void) {
   int events[] = {EV_READY,        EV_ROUND_START,  EV_STONE_PLACED,
-                  EV_WIN,          EV_DRAW,         EV_INVALID_MOVE,
-                  EV_PAUSED,       EV_RESUMED,      EV_RESTARTED,
-                  EV_BACK_TO_MENU, EV_EXIT_CONFIRM, EV_EXIT_CANCEL,
-                  EV_EXIT_APP,     EV_ERROR};
+                  EV_SURRENDER,    EV_WIN,          EV_DRAW,
+                  EV_INVALID_MOVE, EV_PAUSED,       EV_RESUMED,
+                  EV_RESTARTED,    EV_BACK_TO_MENU, EV_EXIT_CONFIRM,
+                  EV_EXIT_CANCEL,  EV_EXIT_APP,     EV_ERROR};
   int keys[] = {MSG_WELCOME,
                 MSG_READY,
                 MSG_TURN_BLACK,
@@ -124,6 +124,8 @@ static void test_event_and_message_centers(void) {
                 MSG_WIN_BLACK,
                 MSG_WIN_WHITE,
                 MSG_DRAW,
+                MSG_SURRENDER_BLACK,
+                MSG_SURRENDER_WHITE,
                 MSG_INVALID_INPUT,
                 MSG_OUT_OF_BOUNDS,
                 MSG_CELL_OCCUPIED,
