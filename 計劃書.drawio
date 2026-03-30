@@ -1,0 +1,217 @@
+<mxfile host="65bd71144e">
+    <diagram id="d_snUzEKAf-GPDYwU-BI" name="主程式流程">
+        <mxGraphModel dx="826" dy="719" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="3" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Dev C++ 5.11&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="40" width="110" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" style="edgeStyle=none;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="4" target="7" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="點開&amp;nbsp;&lt;div&gt;game.exe 檔案&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="190" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" style="edgeStyle=none;html=1;" parent="1" source="5" target="4" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="遊戲流程" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="80" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="UfyyT2fbheYzC0QpQX6B-32" style="edgeStyle=none;html=1;" parent="1" source="7" target="UfyyT2fbheYzC0QpQX6B-30" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="32" value="" style="edgeStyle=none;html=1;" parent="1" source="7" target="31" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="歡迎標題" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="290" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="25" style="edgeStyle=none;html=1;" parent="1" source="10" target="24" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="28" style="edgeStyle=none;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="10" target="27" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="選擇模式 人類 / AI&lt;div&gt;+7&lt;/div&gt;" style="rhombus;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="510" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="16" style="edgeStyle=none;html=1;" parent="1" source="12" target="15" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="20" value="困難" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="16" vertex="1" connectable="0">
+                    <mxGeometry x="-0.304" relative="1" as="geometry">
+                        <mxPoint x="4" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="18" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="12" target="17" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="480" y="480" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="480" y="480"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="19" value="普通" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="18" vertex="1" connectable="0">
+                    <mxGeometry x="0.0914" y="3" relative="1" as="geometry">
+                        <mxPoint x="31" y="3" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="12" value="難度&lt;div&gt;XR&lt;/div&gt;" style="rhombus;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="420" y="510" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="29" style="edgeStyle=none;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="15" target="27" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="674" y="660"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="15" value="Minimax 算法" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="614" y="520" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="30" style="edgeStyle=none;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="17" target="27" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="674" y="660" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="790" y="480"/>
+                            <mxPoint x="790" y="660"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="17" value="隨機帶點攻擊性" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="614" y="450" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="26" style="edgeStyle=none;html=1;" parent="1" source="24" target="12" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="24" value="先後手選擇&lt;div&gt;先手/後手/隨機&lt;/div&gt;&lt;div&gt;+7&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="230" y="510" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="27" value="進入遊戲" style="shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="630" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="UfyyT2fbheYzC0QpQX6B-33" style="edgeStyle=none;html=1;" parent="1" source="UfyyT2fbheYzC0QpQX6B-30" target="10" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="UfyyT2fbheYzC0QpQX6B-30" value="棋盤大小&lt;div&gt;8/15/19/自訂&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="380" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="31" value="           宇霆" style="shape=waypoint;sketch=0;size=6;pointerEvents=1;points=[];fillColor=default;resizable=0;rotatable=0;perimeter=centerPerimeter;snapToPoint=1;rounded=0;" parent="1" vertex="1">
+                    <mxGeometry x="120" y="290" width="20" height="20" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="Y_OBTh8G9Z_mojW6G5D-" name="畫面配置與條件">
+        <mxGraphModel dx="702" dy="2265" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="aa4zW2IMYiJsDTKEHL0A-1" value="主程式" style="shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;" parent="1" vertex="1">
+                    <mxGeometry x="130" y="-1490" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="utkZe91rDjcOkWD1OTkB-1" value="&lt;ul&gt;&lt;li&gt;黑先白後&lt;/li&gt;&lt;li&gt;操縱方式：鍵盤方向鍵、自訂輸入行列 a,1、a1...&lt;/li&gt;&lt;li&gt;檢查落子判斷(確認合法性，並提示使用者不可下)&lt;/li&gt;&lt;li&gt;切換落子者(玩家)&lt;/li&gt;&lt;li&gt;投降按鈕&lt;/li&gt;&lt;li&gt;[o] 落子顯示(前手落子點)&amp;nbsp;&lt;span style=&quot;color: rgb(63, 63, 63); font-size: 16px; white-space: break-spaces;&quot;&gt;○&lt;/span&gt;●&lt;/li&gt;&lt;li&gt;判斷連線與勝負連線&amp;gt;=5的繪製 []&lt;/li&gt;&lt;li&gt;回到主畫面&lt;/li&gt;&lt;li&gt;ctrl+c 強制退出不可更動&lt;/li&gt;&lt;li&gt;要求畫面要有一定大小&lt;/li&gt;&lt;/ul&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=26;" parent="1" vertex="1">
+                    <mxGeometry x="260" y="-1650" width="630" height="470" as="geometry"/>
+                </mxCell>
+                <mxCell id="iBiDwc0aMIo2HT8AgNBE-5" value="終端機" style="swimlane;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="200" y="-1220" width="550" height="450" as="geometry"/>
+                </mxCell>
+                <mxCell id="iBiDwc0aMIo2HT8AgNBE-6" value="&lt;pre&gt;&lt;font color=&quot;#000000&quot;&gt;A&amp;nbsp; B&amp;nbsp; C&amp;nbsp; D&amp;nbsp; E&amp;nbsp; F&amp;nbsp; G&amp;nbsp; H&amp;nbsp; I&amp;nbsp; J&amp;nbsp; K&amp;nbsp; L&amp;nbsp; M&amp;nbsp; N&amp;nbsp; O&lt;br&gt;&lt;/font&gt;&lt;font color=&quot;#000000&quot;&gt;&amp;nbsp;1 .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; 1&lt;br&gt;&lt;/font&gt;&lt;font color=&quot;#000000&quot;&gt;&amp;nbsp;2 .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; 2&lt;br&gt;&lt;/font&gt;&lt;font color=&quot;#000000&quot;&gt;&amp;nbsp;3 .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; 3&lt;br&gt;&lt;/font&gt;&lt;font color=&quot;#000000&quot;&gt;&amp;nbsp;4 .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; 4&lt;br&gt;&lt;/font&gt;&lt;font color=&quot;#000000&quot;&gt;&amp;nbsp;5 .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; 5&lt;br&gt;&lt;/font&gt;&lt;font color=&quot;#000000&quot;&gt;&amp;nbsp;6 .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; 6&lt;br&gt;&lt;/font&gt;&lt;font color=&quot;#000000&quot;&gt;&amp;nbsp;7 .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; 7&lt;br&gt;&lt;/font&gt;&lt;font color=&quot;#000000&quot;&gt;&amp;nbsp;8 .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; X&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; 8&lt;br&gt;&lt;/font&gt;&lt;font color=&quot;#000000&quot;&gt;&amp;nbsp;9 .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; X&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; 9&lt;br&gt;&lt;/font&gt;&lt;font color=&quot;#000000&quot;&gt;10 .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; O&amp;nbsp; .&amp;nbsp; X&amp;nbsp; O&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; . 10&lt;br&gt;&lt;/font&gt;&lt;font color=&quot;#000000&quot;&gt;11 .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; . [o] O&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; . 11&lt;br&gt;&lt;/font&gt;&lt;font color=&quot;#000000&quot;&gt;12 .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; . 12&lt;br&gt;&lt;/font&gt;&lt;font color=&quot;#000000&quot;&gt;13 .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; X&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; . 13&lt;br&gt;&lt;/font&gt;&lt;font color=&quot;#000000&quot;&gt;14 .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; . 14&lt;br&gt;&lt;/font&gt;&lt;font color=&quot;#000000&quot;&gt;15 .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; .&amp;nbsp; . 15&lt;br&gt;&lt;/font&gt;&lt;font color=&quot;#000000&quot;&gt;A&amp;nbsp; B&amp;nbsp; C&amp;nbsp; D&amp;nbsp; E&amp;nbsp; F&amp;nbsp; G&amp;nbsp; H&amp;nbsp; I&amp;nbsp; J&amp;nbsp; K&amp;nbsp; L&amp;nbsp; M&amp;nbsp; N&amp;nbsp; O&lt;/font&gt;&lt;/pre&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=14;" parent="iBiDwc0aMIo2HT8AgNBE-5" vertex="1">
+                    <mxGeometry y="50" width="400" height="330" as="geometry"/>
+                </mxCell>
+                <mxCell id="iBiDwc0aMIo2HT8AgNBE-7" value="P: 投降 | esc: 退出 | 方向鍵: 移動落點 | Enter: 確認落子" style="text;html=1;align=right;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="iBiDwc0aMIo2HT8AgNBE-5" vertex="1">
+                    <mxGeometry x="216" y="420" width="320" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="iBiDwc0aMIo2HT8AgNBE-8" value="黑方回合 第?手 (XX勝利!)" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="iBiDwc0aMIo2HT8AgNBE-5" vertex="1">
+                    <mxGeometry x="10" y="30" width="320" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="iBiDwc0aMIo2HT8AgNBE-9" value="[錯誤訊息區]EX: 此位置已有棋子" style="text;html=1;align=right;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="iBiDwc0aMIo2HT8AgNBE-5" vertex="1">
+                    <mxGeometry x="210" y="390" width="320" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="iBiDwc0aMIo2HT8AgNBE-10" value="輸入區: M3" style="rounded=0;whiteSpace=wrap;html=1;align=left;" parent="iBiDwc0aMIo2HT8AgNBE-5" vertex="1">
+                    <mxGeometry y="417" width="160" height="20" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="CValcHJ7TGl14dVT40DV" name="文件規劃">
+        <mxGraphModel dx="702" dy="611" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="7ERf8Ad-GGwRkvx0vVJu-1" value="game.exe" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="40" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="oeMAbZNGDbMVBSsj34Jl-1" style="edgeStyle=none;html=1;" parent="1" source="7ERf8Ad-GGwRkvx0vVJu-3" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="520" y="250" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="7ERf8Ad-GGwRkvx0vVJu-3" value="&lt;ul&gt;&lt;li&gt;&lt;span style=&quot;font-size: 26px;&quot;&gt;main.c 主程式入口 初始化資料&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span style=&quot;font-size: 26px;&quot;&gt;munu.c 標題畫面&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span style=&quot;font-size: 26px;&quot;&gt;ui(output)&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span style=&quot;font-size: 26px;&quot;&gt;board 棋盤&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span style=&quot;font-size: 26px;&quot;&gt;input&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span style=&quot;font-size: 26px;&quot;&gt;game(以及判斷勝負條件)&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span style=&quot;font-size: 26px;&quot;&gt;config (message，棋子樣式等)&lt;/span&gt;&lt;/li&gt;&lt;li&gt;&lt;span style=&quot;font-size: 26px;&quot;&gt;ai&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="85" width="420" height="330" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="2uz898IFzaK-K0XIhNBf" name="分工">
+        <mxGraphModel dx="702" dy="611" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="M2TUmyTJqknmk0YzdPT4" name="函式堆疊">
+        <mxGraphModel dx="702" dy="611" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="HX8pxW3mmyfLZGef7ndM-8" style="edgeStyle=none;html=1;" edge="1" parent="1" target="HX8pxW3mmyfLZGef7ndM-1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="119" y="200" as="sourcePoint"/>
+                        <Array as="points">
+                            <mxPoint x="119" y="230"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="TBbAF8XEiT_nxg3LB9ZB-1" value="main 主程式" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="60" y="40" width="260" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="HX8pxW3mmyfLZGef7ndM-4" style="edgeStyle=none;html=1;exitX=0;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="HX8pxW3mmyfLZGef7ndM-1" target="HX8pxW3mmyfLZGef7ndM-3">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="60" y="350"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="HX8pxW3mmyfLZGef7ndM-1" value="menu 選單&lt;div style=&quot;text-align: left;&quot;&gt;- mode 模式&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;- size 棋盤大小&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;- turn 先後順序(AI用的)&lt;/div&gt;" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="60" y="250" width="230" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="HX8pxW3mmyfLZGef7ndM-3" value="&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;&lt;font style=&quot;color: rgb(0, 0, 0);&quot;&gt;game 遊戲&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;- board 棋盤&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;- event_code 事件&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;- player 玩家&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;- state 狀態&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;- pos:row col 位置&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;- msg_key&lt;/div&gt;" style="whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1">
+                    <mxGeometry x="90" y="320" width="290" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="HX8pxW3mmyfLZGef7ndM-10" style="edgeStyle=none;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="HX8pxW3mmyfLZGef7ndM-5">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="321" y="100" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="HX8pxW3mmyfLZGef7ndM-5" value="messages 文字訊息&lt;div&gt;MSG_&amp;lt;message&amp;gt;&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="370" y="60" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="HX8pxW3mmyfLZGef7ndM-11" style="edgeStyle=none;html=1;" edge="1" parent="1" source="HX8pxW3mmyfLZGef7ndM-6">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="320.0000000000001" y="190" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="HX8pxW3mmyfLZGef7ndM-6" value="event 事件&lt;div&gt;EV_&amp;lt;name&amp;gt;&lt;/div&gt;" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="370" y="150" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="HX8pxW3mmyfLZGef7ndM-12" value="Include 的標頭檔案" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="365" y="30" width="130" height="30" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
