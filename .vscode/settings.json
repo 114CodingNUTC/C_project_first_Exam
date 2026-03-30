@@ -1,0 +1,16 @@
+{
+    "C_Cpp.errorSquiggles": "disabled",
+    "C_Cpp.codeAnalysis.clangTidy.enabled": false,
+    "[c]": {
+        "editor.codeActionsOnSave": {
+            "source.fixAll": "never",
+            "source.fixAll.clangd": "never"
+        }
+    },
+    "[cpp]": {
+        "editor.codeActionsOnSave": {
+            "source.fixAll": "never",
+            "source.fixAll.clangd": "never"
+        }
+    }
+}

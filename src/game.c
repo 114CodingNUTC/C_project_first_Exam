@@ -1,10 +1,345 @@
 #include "../include/config.h"
 #include "../include/events.h"
 #include "../include/functions.h"
-#include "../include/message.h"
+#include "../include/messages.h"
+#include <conio.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <windows.h>
 
-int game_loop(int lang) {
-  Game game;
-  return EV_GAME_NONE;
+/**
+ * @brief 取得目前毫秒時間戳。
+ * @return 從系統啟動至今的毫秒數。
+ */
+static long long now_ms(void) { return GetTickCount64(); }
+
+/**
+ * @brief 依照模式選擇對應 AI 並計算下一手。
+ * @param game 當前遊戲狀態。
+ * @param mode 遊戲模式編號。
+ * @param out_row 輸出列索引。
+ * @param out_col 輸出行索引。
+ * @return 1 代表成功取得落子位置；0 代表失敗。
+ */
+static int handle_ai_turn(const GomokuGame *game, int mode, int *out_row,
+                          int *out_col) {
+  if (mode == 2)
+    return ai_easy_pick_move(game, out_row, out_col);
+  if (mode == 3)
+    return ai_medium_pick_move(game, out_row, out_col);
+  if (mode == 4)
+    return ai_hard_pick_move(game, out_row, out_col);
+  return 0;
+}
+
+/**
+ * @brief 輸出事件追蹤訊息。
+ * @param lang 語系。
+ * @param event_code 事件代碼。
+ */
+static void trace_event(int lang, int event_code) {
+  printf(msg_get(lang, MSG_TRACE_EVENT_FMT), event_code);
+  printf("\n");
+}
+
+/**
+ * @brief 重設整局狀態為開局。
+ * @param game 遊戲狀態物件。
+ * @param board_size 棋盤邊長。
+ */
+void game_reset(GomokuGame *game, int board_size) {
+  int i;
+
+  if (game == 0)
+    return;
+
+  board_init(game, board_size);
+  game->current_player = STONE_BLACK;
+  game->move_count = 0;
+  game->last_row = -1;
+  game->last_col = -1;
+  game->game_over = 0;
+  game->winner = STONE_EMPTY;
+  game->win_line_count = 0;
+  for (i = 0; i < CFG_WIN_STREAK; i++) {
+    game->win_line[i][0] = -1;
+    game->win_line[i][1] = -1;
+  }
+}
+
+/**
+ * @brief 同步設定事件與訊息輸出值。
+ * @param out_event_code 事件輸出指標，可為 0。
+ * @param out_message_key 訊息鍵輸出指標，可為 0。
+ * @param event_code 要寫入的事件碼。
+ * @param msg_key 要寫入的訊息鍵。
+ */
+static void set_output(int *out_event_code, int *out_message_key,
+                       int event_code, int msg_key) {
+  if (out_event_code != 0)
+    *out_event_code = event_code;
+  if (out_message_key != 0)
+    *out_message_key = msg_key;
+}
+
+/**
+ * @brief 嘗試落子並回傳完整規則判定結果。
+ * @param game 遊戲狀態物件。
+ * @param player 嘗試落子的玩家。
+ * @param row 目標列索引。
+ * @param col 目標行索引。
+ * @param out_event_code 事件輸出指標，可為 0。
+ * @param out_message_key 訊息輸出指標，可為 0。
+ * @return PLACE_OK 或對應的 PLACE_ERR_* 錯誤碼。
+ */
+int try_place_stone(GomokuGame *game, int player, int row, int col,
+                    int *out_event_code, int *out_message_key) {
+  int line_count;
+
+  if (game == 0) {
+    set_output(out_event_code, out_message_key, EV_ERROR, MSG_INTERNAL_ERROR);
+    return PLACE_ERR_INVALID_ARG;
+  }
+  if (player != STONE_BLACK && player != STONE_WHITE) {
+    set_output(out_event_code, out_message_key, EV_ERROR, MSG_INVALID_INPUT);
+    return PLACE_ERR_INVALID_ARG;
+  }
+  if (game->game_over) {
+    set_output(out_event_code, out_message_key, EV_INVALID_MOVE, MSG_GAME_OVER);
+    return PLACE_ERR_GAME_OVER;
+  }
+  if (player != game->current_player) {
+    set_output(out_event_code, out_message_key, EV_INVALID_MOVE,
+               MSG_NOT_YOUR_TURN);
+    return PLACE_ERR_NOT_CURRENT_PLAYER;
+  }
+  if (!board_is_in_bounds(game, row, col)) {
+    set_output(out_event_code, out_message_key, EV_INVALID_MOVE,
+               MSG_OUT_OF_BOUNDS);
+    return PLACE_ERR_OUT_OF_BOUNDS;
+  }
+  if (!board_is_empty(game, row, col)) {
+    set_output(out_event_code, out_message_key, EV_INVALID_MOVE,
+               MSG_CELL_OCCUPIED);
+    return PLACE_ERR_OCCUPIED;
+  }
+  if (!board_place_stone(game, player, row, col)) {
+    set_output(out_event_code, out_message_key, EV_ERROR, MSG_INTERNAL_ERROR);
+    return PLACE_ERR_INTERNAL;
+  }
+
+  game->move_count++;
+  game->last_row = row;
+  game->last_col = col;
+
+  line_count = 0;
+  if (rules_check_win(game, row, col, player, game->win_line, &line_count)) {
+    game->win_line_count = line_count;
+    game->game_over = 1;
+    game->winner = player;
+    if (player == STONE_BLACK)
+      set_output(out_event_code, out_message_key, EV_WIN, MSG_WIN_BLACK);
+    else
+      set_output(out_event_code, out_message_key, EV_WIN, MSG_WIN_WHITE);
+    return PLACE_OK;
+  }
+
+  if (rules_is_draw(game)) {
+    game->game_over = 1;
+    game->winner = STONE_EMPTY;
+    set_output(out_event_code, out_message_key, EV_DRAW, MSG_DRAW);
+    return PLACE_OK;
+  }
+
+  game->current_player = (player == STONE_BLACK) ? STONE_WHITE : STONE_BLACK;
+  if (game->current_player == STONE_BLACK) {
+    set_output(out_event_code, out_message_key, EV_STONE_PLACED,
+               MSG_TURN_BLACK);
+  } else {
+    set_output(out_event_code, out_message_key, EV_STONE_PLACED,
+               MSG_TURN_WHITE);
+  }
+
+  return PLACE_OK;
+}
+
+/**
+ * @brief 讓當前玩家投降並直接結束對局。
+ * @param game 遊戲狀態物件。
+ * @param player 投降玩家。
+ * @param out_event_code 事件輸出指標，可為 0。
+ * @param out_message_key 訊息輸出指標，可為 0。
+ * @return PLACE_OK 或對應的 PLACE_ERR_* 錯誤碼。
+ */
+int game_surrender(GomokuGame *game, int player, int *out_event_code,
+                   int *out_message_key) {
+  if (game == 0) {
+    set_output(out_event_code, out_message_key, EV_ERROR, MSG_INTERNAL_ERROR);
+    return PLACE_ERR_INVALID_ARG;
+  }
+  if (player != STONE_BLACK && player != STONE_WHITE) {
+    set_output(out_event_code, out_message_key, EV_ERROR, MSG_INVALID_INPUT);
+    return PLACE_ERR_INVALID_ARG;
+  }
+  if (game->game_over) {
+    set_output(out_event_code, out_message_key, EV_INVALID_MOVE, MSG_GAME_OVER);
+    return PLACE_ERR_GAME_OVER;
+  }
+  if (player != game->current_player) {
+    set_output(out_event_code, out_message_key, EV_INVALID_MOVE,
+               MSG_NOT_YOUR_TURN);
+    return PLACE_ERR_NOT_CURRENT_PLAYER;
+  }
+
+  game->game_over = 1;
+  game->win_line_count = 0;
+  if (player == STONE_BLACK) {
+    game->winner = STONE_WHITE;
+    set_output(out_event_code, out_message_key, EV_SURRENDER,
+               MSG_SURRENDER_BLACK);
+  } else {
+    game->winner = STONE_BLACK;
+    set_output(out_event_code, out_message_key, EV_SURRENDER,
+               MSG_SURRENDER_WHITE);
+  }
+
+  return PLACE_OK;
+}
+
+/**
+ * @brief 執行單場對局主迴圈。
+ * @param mode 遊戲模式編號。
+ * @param board_size 棋盤邊長。
+ * @param ai_turn_choice AI 先後手設定。
+ * @param lang 語系。
+ * @return GAME_LOOP_BACK_TO_MENU 或 GAME_LOOP_EXIT_APP。
+ */
+int game_run_loop(int mode, int board_size, int ai_turn_choice, int lang) {
+  GomokuGame game;
+  UIState ui_state;
+  int row;
+  int col;
+  int event_code;
+  int msg_key;
+  int player;
+  int player_action;
+  int state;
+  int pause_action;
+  int end_message_key;
+
+  srand((unsigned int)time(0));
+
+  game_reset(&game, board_size);
+  if (mode != 1 && ai_turn_choice == CFG_AI_TURN_AI_FIRST)
+    game.current_player = STONE_WHITE;
+  ui_init_state(&ui_state, board_size);
+  ui_state.ai_mode = mode;
+  ui_state.ai_difficulty = mode;
+  ui_set_message(&ui_state, MSG_READY, 0, now_ms(), CFG_MESSAGE_HOLD_MS);
+  trace_event(lang, EV_READY);
+  state = GS_IN_GAME;
+  end_message_key = MSG_DRAW;
+
+  while (1) {
+    if (state == GS_IN_GAME) {
+      if (!game.game_over) {
+        if (mode != 1 && game.current_player == STONE_WHITE) {
+          if (!handle_ai_turn(&game, mode, &row, &col)) {
+            state = GS_MAIN_MENU;
+            trace_event(lang, EV_BACK_TO_MENU);
+            break;
+          }
+        } else {
+          player_action = input_read_player_move(&game, &ui_state, &row, &col);
+          if (player_action == PLAYER_ACTION_PAUSE) {
+            state = GS_PAUSED;
+            ui_set_message(&ui_state, MSG_PAUSED, 0, now_ms(),
+                           CFG_MESSAGE_HOLD_MS);
+            trace_event(lang, EV_PAUSED);
+            continue;
+          }
+          if (player_action == PLAYER_ACTION_SURRENDER) {
+            player = game.current_player;
+            if (game_surrender(&game, player, &event_code, &msg_key) !=
+                PLACE_OK) {
+              ui_set_message(&ui_state, msg_key, 1, now_ms(),
+                             CFG_MESSAGE_HOLD_MS);
+              trace_event(lang, event_code);
+              continue;
+            }
+            end_message_key = msg_key;
+            ui_set_message(&ui_state, msg_key, 0, now_ms(),
+                           CFG_MESSAGE_HOLD_MS);
+            trace_event(lang, event_code);
+            continue;
+          }
+        }
+
+        player = game.current_player;
+        if (try_place_stone(&game, player, row, col, &event_code, &msg_key) !=
+            PLACE_OK) {
+          ui_set_message(&ui_state, msg_key, 1, now_ms(), CFG_MESSAGE_HOLD_MS);
+          trace_event(lang, event_code);
+          continue;
+        }
+
+        ui_set_message(&ui_state, msg_key, event_code == EV_INVALID_MOVE,
+                       now_ms(), CFG_MESSAGE_HOLD_MS);
+        if (game.game_over)
+          end_message_key = msg_key;
+        ui_move_cursor(&ui_state, row, col, game.board_size);
+        trace_event(lang, event_code);
+        continue;
+      }
+
+      ui_set_message(&ui_state, end_message_key, 0, now_ms(), CFG_MESSAGE_HOLD_MS);
+      ui_render_full(&game, &ui_state, lang);
+      printf("%s\n", msg_get(lang, MSG_PRESS_ANY_KEY_BACK_MENU));
+      _getch();
+      state = GS_MAIN_MENU;
+      trace_event(lang, EV_BACK_TO_MENU);
+      break;
+    }
+
+    if (state == GS_PAUSED) {
+      pause_action = input_choose_pause_action(lang);
+      if (pause_action == 1) {
+        state = GS_IN_GAME;
+        ui_set_message(&ui_state, MSG_MOVE_HINT, 0, now_ms(),
+                       CFG_MESSAGE_HOLD_MS);
+        trace_event(lang, EV_RESUMED);
+      } else if (pause_action == 2) {
+        game_reset(&game, board_size);
+        ui_init_state(&ui_state, board_size);
+        ui_set_message(&ui_state, MSG_READY, 0, now_ms(), CFG_MESSAGE_HOLD_MS);
+        state = GS_IN_GAME;
+        trace_event(lang, EV_RESTARTED);
+      } else if (pause_action == 3) {
+        state = GS_MAIN_MENU;
+        trace_event(lang, EV_BACK_TO_MENU);
+      } else {
+        state = GS_CONFIRM_EXIT;
+        trace_event(lang, EV_EXIT_CONFIRM);
+      }
+      continue;
+    }
+
+    if (state == GS_CONFIRM_EXIT) {
+      if (input_confirm_exit(lang)) {
+        trace_event(lang, EV_EXIT_APP);
+        return GAME_LOOP_EXIT_APP;
+      }
+      ui_set_message(&ui_state, MSG_EXIT_CANCELLED, 0, now_ms(),
+                     CFG_MESSAGE_HOLD_MS);
+      state = GS_PAUSED;
+      trace_event(lang, EV_EXIT_CANCEL);
+      continue;
+    }
+
+    if (state == GS_MAIN_MENU)
+      break;
+  }
+
+  return GAME_LOOP_BACK_TO_MENU;
 }

@@ -4,9 +4,9 @@
 CPP      = g++.exe
 CC       = gcc.exe
 WINDRES  = windres.exe
-OBJ      = src/main.o src/menu.o src/message.o src/setup.o
-LINKOBJ  = src/main.o src/menu.o src/message.o src/setup.o
-LIBS     = -L"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib" -L"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/lib" -static-libgcc include/config.h include/events.h include/message.h
+OBJ      = src/ai_easy.o src/ai_hard.o src/ai_medium.o src/board.o src/game.o src/input.o src/main.o src/messages.o src/rules.o src/ui.o
+LINKOBJ  = src/ai_easy.o src/ai_hard.o src/ai_medium.o src/board.o src/game.o src/input.o src/main.o src/messages.o src/rules.o src/ui.o
+LIBS     = -L"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib" -L"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/lib" -static-libgcc include/config.h include/events.h include/messages.h include/functions.h
 INCS     = -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include"
 CXXINCS  = -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include/c++"
 BIN      = game.exe
@@ -24,14 +24,32 @@ clean: clean-custom
 $(BIN): $(OBJ)
 	$(CC) $(LINKOBJ) -o $(BIN) $(LIBS)
 
+src/ai_easy.o: src/ai_easy.c
+	$(CC) -c src/ai_easy.c -o src/ai_easy.o $(CFLAGS)
+
+src/ai_hard.o: src/ai_hard.c
+	$(CC) -c src/ai_hard.c -o src/ai_hard.o $(CFLAGS)
+
+src/ai_medium.o: src/ai_medium.c
+	$(CC) -c src/ai_medium.c -o src/ai_medium.o $(CFLAGS)
+
+src/board.o: src/board.c
+	$(CC) -c src/board.c -o src/board.o $(CFLAGS)
+
+src/game.o: src/game.c
+	$(CC) -c src/game.c -o src/game.o $(CFLAGS)
+
+src/input.o: src/input.c
+	$(CC) -c src/input.c -o src/input.o $(CFLAGS)
+
 src/main.o: src/main.c
 	$(CC) -c src/main.c -o src/main.o $(CFLAGS)
 
-src/menu.o: src/menu.c
-	$(CC) -c src/menu.c -o src/menu.o $(CFLAGS)
+src/messages.o: src/messages.c
+	$(CC) -c src/messages.c -o src/messages.o $(CFLAGS)
 
-src/message.o: src/message.c
-	$(CC) -c src/message.c -o src/message.o $(CFLAGS)
+src/rules.o: src/rules.c
+	$(CC) -c src/rules.c -o src/rules.o $(CFLAGS)
 
-src/setup.o: src/setup.c
-	$(CC) -c src/setup.c -o src/setup.o $(CFLAGS)
+src/ui.o: src/ui.c
+	$(CC) -c src/ui.c -o src/ui.o $(CFLAGS)
