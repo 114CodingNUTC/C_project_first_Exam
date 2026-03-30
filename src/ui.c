@@ -22,6 +22,8 @@ void ui_init_state(UIState *state, int board_size) {
   state->input_text[0] = '\0';
   state->input_length = 0;
   state->input_cursor = 0;
+  state->ai_mode = 0;
+  state->ai_difficulty = 0;
 }
 
 /**
@@ -128,9 +130,11 @@ void ui_render_board(const GomokuGame *game) {
       int stone;
       stone = game->board[row][col];
       if (stone == STONE_BLACK)
-        printf("%c ", CFG_STONE_CHAR_BLACK);
+        printf("%s%c%s ", CFG_ANSI_COLOR_BRIGHT_BLUE, CFG_STONE_CHAR_BLACK,
+               CFG_ANSI_COLOR_RESET);
       else if (stone == STONE_WHITE)
-        printf("%c ", CFG_STONE_CHAR_WHITE);
+        printf("%s%c%s ", CFG_ANSI_COLOR_BRIGHT_YELLOW, CFG_STONE_CHAR_WHITE,
+               CFG_ANSI_COLOR_RESET);
       else
         printf("%c ", CFG_STONE_CHAR_EMPTY);
     }
@@ -203,6 +207,15 @@ void ui_render_full(const GomokuGame *game, const UIState *state, int lang) {
     APPEND(msg_get(lang, MSG_UI_STATUS_BLACK_FMT), game->move_count);
   else
     APPEND(msg_get(lang, MSG_UI_STATUS_WHITE_FMT), game->move_count);
+  if (state->ai_mode != 1) {
+    APPEND(" | ");
+    if (state->ai_difficulty == 2)
+      APPEND(msg_get(lang, MSG_MODE_1V_AI_EASY));
+    else if (state->ai_difficulty == 3)
+      APPEND(msg_get(lang, MSG_MODE_1V_AI_MEDIUM));
+    else if (state->ai_difficulty == 4)
+      APPEND(msg_get(lang, MSG_MODE_1V_AI_HARD));
+  }
   APPEND("\n\n");
 
   APPEND("  ");
@@ -222,9 +235,11 @@ void ui_render_full(const GomokuGame *game, const UIState *state, int lang) {
 
       if (is_win) {
         if (stone == STONE_BLACK)
-          APPEND("[%c]", CFG_STONE_CHAR_BLACK);
+          APPEND("[%s%c%s]", CFG_ANSI_COLOR_BRIGHT_BLUE,
+                 CFG_STONE_CHAR_BLACK, CFG_ANSI_COLOR_RESET);
         else if (stone == STONE_WHITE)
-          APPEND("[%c]", CFG_STONE_CHAR_WHITE);
+          APPEND("[%s%c%s]", CFG_ANSI_COLOR_BRIGHT_YELLOW,
+                 CFG_STONE_CHAR_WHITE, CFG_ANSI_COLOR_RESET);
         else
           APPEND("[%c]", CFG_STONE_CHAR_WIN_FALLBACK);
       } else {
@@ -235,16 +250,20 @@ void ui_render_full(const GomokuGame *game, const UIState *state, int lang) {
 
         if (is_last) {
           if (stone == STONE_BLACK)
-            APPEND("%c", CFG_STONE_CHAR_BLACK_LAST);
+            APPEND("%s%c%s", CFG_ANSI_COLOR_BRIGHT_BLUE,
+                   CFG_STONE_CHAR_BLACK_LAST, CFG_ANSI_COLOR_RESET);
           else if (stone == STONE_WHITE)
-            APPEND("%c", CFG_STONE_CHAR_WHITE_LAST);
+            APPEND("%s%c%s", CFG_ANSI_COLOR_BRIGHT_YELLOW,
+                   CFG_STONE_CHAR_WHITE_LAST, CFG_ANSI_COLOR_RESET);
           else
             APPEND("%c", CFG_STONE_CHAR_EMPTY);
         } else {
           if (stone == STONE_BLACK)
-            APPEND("%c", CFG_STONE_CHAR_BLACK);
+            APPEND("%s%c%s", CFG_ANSI_COLOR_BRIGHT_BLUE,
+                   CFG_STONE_CHAR_BLACK, CFG_ANSI_COLOR_RESET);
           else if (stone == STONE_WHITE)
-            APPEND("%c", CFG_STONE_CHAR_WHITE);
+            APPEND("%s%c%s", CFG_ANSI_COLOR_BRIGHT_YELLOW,
+                   CFG_STONE_CHAR_WHITE, CFG_ANSI_COLOR_RESET);
           else
             APPEND("%c", CFG_STONE_CHAR_EMPTY);
         }
@@ -288,6 +307,7 @@ void ui_render_full(const GomokuGame *game, const UIState *state, int lang) {
   } else {
     APPEND(msg_get(lang, MSG_UI_MSG_LABEL_FMT), msg_get(lang, MSG_MOVE_HINT));
   }
+  APPEND("\n");
 
   frame[offset] = '\0';
   fputs(frame, stdout);

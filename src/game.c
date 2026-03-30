@@ -234,6 +234,8 @@ int game_run_loop(int mode, int board_size, int ai_turn_choice, int lang) {
   if (mode != 1 && ai_turn_choice == CFG_AI_TURN_AI_FIRST)
     game.current_player = STONE_WHITE;
   ui_init_state(&ui_state, board_size);
+  ui_state.ai_mode = mode;
+  ui_state.ai_difficulty = mode;
   ui_set_message(&ui_state, MSG_READY, 0, now_ms(), CFG_MESSAGE_HOLD_MS);
   trace_event(lang, EV_READY);
   state = GS_IN_GAME;
@@ -291,8 +293,8 @@ int game_run_loop(int mode, int board_size, int ai_turn_choice, int lang) {
         continue;
       }
 
+      ui_set_message(&ui_state, end_message_key, 0, now_ms(), CFG_MESSAGE_HOLD_MS);
       ui_render_full(&game, &ui_state, lang);
-      ui_show_message(end_message_key);
       printf("%s\n", msg_get(lang, MSG_PRESS_ANY_KEY_BACK_MENU));
       _getch();
       state = GS_MAIN_MENU;

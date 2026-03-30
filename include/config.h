@@ -25,6 +25,8 @@
 
 #define CFG_ANSI_CLEAR_AND_HOME "\x1b[3J\x1b[2J\x1b[H"
 #define CFG_ANSI_COLOR_RED "\x1b[31m"
+#define CFG_ANSI_COLOR_BRIGHT_BLUE "\x1b[94m"
+#define CFG_ANSI_COLOR_BRIGHT_YELLOW "\x1b[93m"
 #define CFG_ANSI_COLOR_RESET "\x1b[0m"
 
 /* Windows 控制台顏色常數 (SetConsoleTextAttribute) */
@@ -94,11 +96,11 @@
 #define STONE_BLACK 1
 #define STONE_WHITE 2
 
-#define CFG_STONE_CHAR_BLACK 'o'
-#define CFG_STONE_CHAR_WHITE 'x'
+#define CFG_STONE_CHAR_BLACK 'x'
+#define CFG_STONE_CHAR_WHITE 'o'
 #define CFG_STONE_CHAR_EMPTY '.'
-#define CFG_STONE_CHAR_BLACK_LAST 'O'
-#define CFG_STONE_CHAR_WHITE_LAST 'X'
+#define CFG_STONE_CHAR_BLACK_LAST 'X'
+#define CFG_STONE_CHAR_WHITE_LAST 'O'
 #define CFG_STONE_CHAR_WIN_FALLBACK '#'
 
 #define CFG_AI_TURN_PLAYER_FIRST 1
@@ -127,6 +129,8 @@ typedef struct UIState {
   char input_text[CFG_INPUT_BUFFER_SIZE];
   int input_length;
   int input_cursor;
+  int ai_mode;
+  int ai_difficulty;
 } UIState;
 
 #endif
