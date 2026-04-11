@@ -25,28 +25,19 @@ int input_read_player_move(const GomokuGame *game, UIState *ui_state,
                            int *out_row, int *out_col);
 
 /* 新式菜單選擇函數 (視覺化選單) */
-int input_choose_mode_visual(int lang);
-int input_choose_board_size_visual(int lang);
-int input_choose_ai_turn_visual(int lang);
-
-/* 舊式菜單選擇函數 (向後相容) */
-int input_choose_mode(int lang);
-int input_choose_board_size(int lang);
-int input_choose_ai_turn(int lang);
-int input_choose_pause_action(int lang);
-int input_confirm_exit(int lang);
-
-void ui_render_board(const GomokuGame *game);
-void ui_show_message(int message_key);
+int input_choose_mode_visual(int *lang);
+int input_choose_board_size_visual(int *lang);
+int input_choose_ai_turn_visual(int *lang);
+int input_choose_pause_action_visual(int *lang);
+int input_confirm_exit_visual(int *lang);
 
 /* UI 顏色與光標控制 */
 void ui_set_color(int color);
 void ui_gotoxy(int x, int y);
 void ui_hide_cursor(void);
-void ui_show_cursor(void);
 
 /* UI 選單繪製 */
-void ui_draw_menu_title(void);
+void ui_draw_menu_title(int lang);
 void ui_draw_menu_options(int current_selection, int option_count,
                           const char **option_texts);
 void ui_draw_menu_hint(const char *hint_text);
@@ -61,6 +52,18 @@ void ui_move_cursor(UIState *state, int row, int col, int board_size);
 int ai_easy_pick_move(const GomokuGame *game, int *out_row, int *out_col);
 int ai_medium_pick_move(const GomokuGame *game, int *out_row, int *out_col);
 int ai_hard_pick_move(const GomokuGame *game, int *out_row, int *out_col);
+
+int ai_count_line(const GomokuGame *game, int row, int col, int player, int dr,
+                  int dc);
+int ai_find_immediate_move(const GomokuGame *game, int player, int *out_row,
+                           int *out_col);
+int ai_find_block_four_threat_move(const GomokuGame *game, int player,
+                                   int *out_row, int *out_col);
+int ai_find_extend_three_move(const GomokuGame *game, int player, int *out_row,
+                              int *out_col);
+int ai_has_near_stone(const GomokuGame *game, int row, int col, int range);
+int ai_try_forced_or_tactical_move(const GomokuGame *game, int *out_row,
+                                   int *out_col);
 
 const char *msg_get(int lang, int key);
 

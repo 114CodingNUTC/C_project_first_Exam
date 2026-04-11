@@ -2,38 +2,24 @@
 #include "../include/functions.h"
 #include <stdlib.h>
 
+/*
+ * ai_hard.c - 困難 AI 演算法說明
+ *
+ * 整體策略是「強制手優先 + 候選點縮減 + Minimax/Alpha-Beta」：
+ * 1) 先處理立即勝負（我方致勝、對手致勝防守）。
+ * 2) 再處理中短期戰術（延伸三連、阻擋對手三連轉四連）。
+ * 3) 只對候選點做排序與搜尋，避免全盤展開。
+ * 4) Minimax 使用 Alpha-Beta 剪枝，並套用分支上限與節點預算。
+ * 5) 葉節點評分採棋形分 + 中心偏好 + 攻擊潛力。
+ *
+ * 目的：在固定計算成本內，取得比中等 AI 更穩定的攻防判斷品質。
+ */
+
 typedef struct HardMove {
   int row;
   int col;
   int score;
 } HardMove;
-
-/**
- * @brief 計算指定方向上的連續同色棋子數。
- * @param game 當前遊戲狀態。
- * @param row 起點列索引。
- * @param col 起點行索引。
- * @param player 目標玩家。
- * @param dr 列方向增量。
- * @param dc 行方向增量。
- * @return 連續棋子數量。
- */
-static int count_line(const GomokuGame *game, int row, int col, int player,
-                      int dr, int dc) {
-  int count;
-  int r;
-  int c;
-
-  count = 0;
-  r = row + dr;
-  c = col + dc;
-  while (board_is_in_bounds(game, r, c) && game->board[r][c] == player) {
-    count++;
-    r += dr;
-    c += dc;
-  }
-  return count;
-}
 
 /**
  * @brief 評估單一候選位置的分數（改進版）。
@@ -67,10 +53,10 @@ static int eval_position(const GomokuGame *game, int row, int col, int player) {
   total = 0;
   for (i = 0; i < 4; i++) {
     /* Count in forward and backward direction */
-    fwd =
-        count_line(game, row, col, player, directions[i][0], directions[i][1]);
-    bwd = count_line(game, row, col, player, -directions[i][0],
-                     -directions[i][1]);
+    fwd = ai_count_line(game, row, col, player, directions[i][0],
+                        directions[i][1]);
+    bwd = ai_count_line(game, row, col, player, -directions[i][0],
+                        -directions[i][1]);
     line_len = fwd + bwd + 1;
 
     /* Check if both sides are open (not blocked) */
@@ -111,10 +97,10 @@ static int eval_position(const GomokuGame *game, int row, int col, int player) {
 
   /* Subtract opponent's potential (higher penalty for blocked threats) */
   for (i = 0; i < 4; i++) {
-    fwd = count_line(game, row, col, opposite, directions[i][0],
-                     directions[i][1]);
-    bwd = count_line(game, row, col, opposite, -directions[i][0],
-                     -directions[i][1]);
+    fwd = ai_count_line(game, row, col, opposite, directions[i][0],
+                        directions[i][1]);
+    bwd = ai_count_line(game, row, col, opposite, -directions[i][0],
+                        -directions[i][1]);
     line_len = fwd + bwd + 1;
 
     /* Check if opponent's sides are open */
@@ -176,6 +162,9 @@ evaluate_board(const GomokuGame *game,
   return total;
 }
 
+/**
+ * @brief 給靠近中心的候選點額外加分。
+ */
 static int center_bias(const GomokuGame *game, int row, int col) {
   int center;
 
@@ -183,6 +172,9 @@ static int center_bias(const GomokuGame *game, int row, int col) {
   return CFG_AI_HARD_CENTER_BONUS - (abs(row - center) + abs(col - center));
 }
 
+/**
+ * @brief 計算某方向連線的開口端數量（0~2）。
+ */
 static int count_open_ends(const GomokuGame *game, int row, int col, int player,
                            int dr, int dc) {
   int open_ends;
@@ -212,6 +204,9 @@ static int count_open_ends(const GomokuGame *game, int row, int col, int player,
   return open_ends;
 }
 
+/**
+ * @brief 評估落在指定位置後的進攻潛力（雙四、雙活三等）。
+ */
 static int evaluate_attack_potential(const GomokuGame *game, int row, int col,
                                      int player) {
   int dirs[4][2];
@@ -242,8 +237,8 @@ static int evaluate_attack_potential(const GomokuGame *game, int row, int col,
   threat_four = 0;
   threat_open_three = 0;
   for (i = 0; i < 4; i++) {
-    len = 1 + count_line(&temp, row, col, player, dirs[i][0], dirs[i][1]) +
-          count_line(&temp, row, col, player, -dirs[i][0], -dirs[i][1]);
+    len = 1 + ai_count_line(&temp, row, col, player, dirs[i][0], dirs[i][1]) +
+          ai_count_line(&temp, row, col, player, -dirs[i][0], -dirs[i][1]);
     open_ends =
         count_open_ends(&temp, row, col, player, dirs[i][0], dirs[i][1]);
 
@@ -271,6 +266,9 @@ static int evaluate_attack_potential(const GomokuGame *game, int row, int col,
   return score;
 }
 
+/**
+ * @brief 從候選點中挑選前 N 個高分步，供 Minimax 擴展。
+ */
 static int
 collect_top_moves(const GomokuGame *game,
                   int candidates[CFG_MAX_BOARD_SIZE][CFG_MAX_BOARD_SIZE],
@@ -330,7 +328,7 @@ static int minimax(GomokuGame *game, int depth, int alpha, int beta,
   int i;
   int score;
   int best_score;
-  int out_event;
+  int win_count;
   int orig_player;
   int out_line[CFG_WIN_STREAK][2];
   int move_count;
@@ -365,7 +363,7 @@ static int minimax(GomokuGame *game, int depth, int alpha, int beta,
       board_place_stone(game, game->current_player, moves[i].row, moves[i].col);
 
       if (rules_check_win(game, moves[i].row, moves[i].col,
-                          game->current_player, out_line, &out_event)) {
+                          game->current_player, out_line, &win_count)) {
         score = CFG_AI_EVAL_WIN;
       } else {
         orig_player = game->current_player;
@@ -458,123 +456,6 @@ find_candidates(const GomokuGame *game,
 }
 
 /**
- * @brief 找尋可立即致勝的一步。
- * @param game 當前遊戲狀態。
- * @param player 要測試的玩家。
- * @param out_row 輸出列索引。
- * @param out_col 輸出行索引。
- * @return 1 代表找到；0 代表沒找到。
- */
-static int find_immediate_move(const GomokuGame *game, int player, int *out_row,
-                               int *out_col) {
-  int row;
-  int col;
-  int out_count;
-  int out_line[CFG_WIN_STREAK][2];
-  GomokuGame temp;
-
-  for (row = 0; row < game->board_size; row++) {
-    for (col = 0; col < game->board_size; col++) {
-      if (!board_is_empty(game, row, col))
-        continue;
-
-      temp = *game;
-      board_place_stone(&temp, player, row, col);
-      if (rules_check_win(&temp, row, col, player, out_line, &out_count)) {
-        *out_row = row;
-        *out_col = col;
-        return 1;
-      }
-    }
-  }
-
-  return 0;
-}
-
-static int find_block_four_threat_move(const GomokuGame *game, int opponent,
-                                       int *out_row, int *out_col) {
-  int row;
-  int col;
-  int i;
-  int len;
-  int dirs[4][2];
-  GomokuGame temp;
-
-  dirs[0][0] = 0;
-  dirs[0][1] = 1;
-  dirs[1][0] = 1;
-  dirs[1][1] = 0;
-  dirs[2][0] = 1;
-  dirs[2][1] = 1;
-  dirs[3][0] = 1;
-  dirs[3][1] = -1;
-
-  for (row = 0; row < game->board_size; row++) {
-    for (col = 0; col < game->board_size; col++) {
-      if (!board_is_empty(game, row, col))
-        continue;
-
-      temp = *game;
-      board_place_stone(&temp, opponent, row, col);
-
-      for (i = 0; i < 4; i++) {
-        len = 1 +
-              count_line(&temp, row, col, opponent, dirs[i][0], dirs[i][1]) +
-              count_line(&temp, row, col, opponent, -dirs[i][0], -dirs[i][1]);
-        if (len >= CFG_WIN_STREAK - 1) {
-          *out_row = row;
-          *out_col = col;
-          return 1;
-        }
-      }
-    }
-  }
-
-  return 0;
-}
-
-static int find_extend_three_move(const GomokuGame *game, int player,
-                                  int *out_row, int *out_col) {
-  int row;
-  int col;
-  int i;
-  int len;
-  int dirs[4][2];
-  GomokuGame temp;
-
-  dirs[0][0] = 0;
-  dirs[0][1] = 1;
-  dirs[1][0] = 1;
-  dirs[1][1] = 0;
-  dirs[2][0] = 1;
-  dirs[2][1] = 1;
-  dirs[3][0] = 1;
-  dirs[3][1] = -1;
-
-  for (row = 0; row < game->board_size; row++) {
-    for (col = 0; col < game->board_size; col++) {
-      if (!board_is_empty(game, row, col))
-        continue;
-
-      temp = *game;
-      board_place_stone(&temp, player, row, col);
-
-      for (i = 0; i < 4; i++) {
-        len = 1 + count_line(&temp, row, col, player, dirs[i][0], dirs[i][1]) +
-              count_line(&temp, row, col, player, -dirs[i][0], -dirs[i][1]);
-        if (len == CFG_WIN_STREAK - 1) {
-          *out_row = row;
-          *out_col = col;
-          return 1;
-        }
-      }
-    }
-  }
-
-  return 0;
-}
-
-/**
  * @brief 困難 AI：先做立即勝負檢查，再用深度 Minimax + Alpha-Beta 搜尋。
  * @param game 當前遊戲狀態。
  * @param out_row 輸出列索引。
@@ -582,8 +463,7 @@ static int find_extend_three_move(const GomokuGame *game, int player,
  * @return 1 代表成功找到位置；0 代表無合法位置或參數錯誤。
  */
 int ai_hard_pick_move(const GomokuGame *game, int *out_row, int *out_col) {
-  int row;
-  int col;
+  int move_idx;
   int score;
   int best_score;
   int best_row;
@@ -591,8 +471,7 @@ int ai_hard_pick_move(const GomokuGame *game, int *out_row, int *out_col) {
   int candidates[CFG_MAX_BOARD_SIZE][CFG_MAX_BOARD_SIZE];
   GomokuGame game_copy;
   int out_line[CFG_WIN_STREAK][2];
-  int out_event;
-  int opponent;
+  int win_count;
   int search_depth;
   int node_budget;
   int budget_for_move;
@@ -603,22 +482,7 @@ int ai_hard_pick_move(const GomokuGame *game, int *out_row, int *out_col) {
   if (game == 0 || out_row == 0 || out_col == 0)
     return 0;
 
-  opponent = (game->current_player == STONE_BLACK) ? STONE_WHITE : STONE_BLACK;
-
-  /* Immediate check: can we win this turn? */
-  if (find_immediate_move(game, game->current_player, out_row, out_col))
-    return 1;
-
-  /* Immediate check: must we defend? */
-  if (find_immediate_move(game, opponent, out_row, out_col))
-    return 1;
-
-  /* Create double-threat attack first when no forced defense exists. */
-  if (find_extend_three_move(game, game->current_player, out_row, out_col))
-    return 1;
-
-  /* Immediate check: block opponent from extending three to four */
-  if (find_block_four_threat_move(game, opponent, out_row, out_col))
+  if (ai_try_forced_or_tactical_move(game, out_row, out_col))
     return 1;
 
   find_candidates(game, candidates);
@@ -645,17 +509,17 @@ int ai_hard_pick_move(const GomokuGame *game, int *out_row, int *out_col) {
                                  CFG_AI_HARD_BRANCH_LIMIT_ROOT, moves);
 
   /* Try top candidate positions with enhanced minimax */
-  for (row = 0; row < move_count; row++) {
+  for (move_idx = 0; move_idx < move_count; move_idx++) {
     /* Copy game state */
     game_copy = *game;
 
     /* Try this move */
-    board_place_stone(&game_copy, game->current_player, moves[row].row,
-                      moves[row].col);
+    board_place_stone(&game_copy, game->current_player, moves[move_idx].row,
+                      moves[move_idx].col);
 
     /* Check if it wins immediately */
-    if (rules_check_win(&game_copy, moves[row].row, moves[row].col,
-                        game->current_player, out_line, &out_event)) {
+    if (rules_check_win(&game_copy, moves[move_idx].row, moves[move_idx].col,
+                        game->current_player, out_line, &win_count)) {
       score = CFG_AI_EVAL_WIN + 1000;
     } else {
       /* Run enhanced minimax with adaptive depth */
@@ -666,15 +530,15 @@ int ai_hard_pick_move(const GomokuGame *game, int *out_row, int *out_col) {
                       CFG_AI_SCORE_POS_INF, 0, candidates, &budget_for_move);
 
       attack_bonus = evaluate_attack_potential(
-          game, moves[row].row, moves[row].col, game->current_player);
+          game, moves[move_idx].row, moves[move_idx].col, game->current_player);
       if (attack_bonus > 0)
         score += attack_bonus;
     }
 
     if (score > best_score) {
       best_score = score;
-      best_row = moves[row].row;
-      best_col = moves[row].col;
+      best_row = moves[move_idx].row;
+      best_col = moves[move_idx].col;
     }
   }
 

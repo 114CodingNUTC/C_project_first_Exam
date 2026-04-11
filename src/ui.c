@@ -18,7 +18,6 @@ void ui_init_state(UIState *state, int board_size) {
   state->message_key = MSG_MOVE_HINT;
   state->message_display_end_ms = 0;
   state->message_is_error = 0;
-  state->board_dirty = 1;
   state->input_text[0] = '\0';
   state->input_length = 0;
   state->input_cursor = 0;
@@ -46,7 +45,6 @@ void ui_move_cursor(UIState *state, int row, int col, int board_size) {
     col = board_size - 1;
   state->cursor_row = row;
   state->cursor_col = col;
-  state->board_dirty = 1;
 }
 
 /**
@@ -64,7 +62,6 @@ void ui_set_message(UIState *state, int message_key, int is_error,
   state->message_key = message_key;
   state->message_is_error = is_error;
   state->message_display_end_ms = current_ms + hold_ms;
-  state->board_dirty = 1;
 }
 
 /**
@@ -83,7 +80,7 @@ int ui_message_expired(const UIState *state, long long current_ms) {
  * @brief 取得目前毫秒時間戳。
  * @return 從系統啟動至今的毫秒數。
  */
-static long long get_current_ms(void) { return GetTickCount64(); }
+static long long get_current_ms(void) { return (long long)GetTickCount64(); }
 
 /**
  * @brief 清空主控台畫面並將游標回到原點。
@@ -109,45 +106,6 @@ static void ui_clear_console(void) {
   FillConsoleOutputCharacter(console, ' ', length, home, &written);
   FillConsoleOutputAttribute(console, csbi.wAttributes, length, home, &written);
   SetConsoleCursorPosition(console, home);
-}
-
-/**
- * @brief 繪製純棋盤內容（簡易版本）。
- * @param game 遊戲狀態物件。
- */
-void ui_render_board(const GomokuGame *game) {
-  int row;
-  int col;
-
-  if (game == 0)
-    return;
-
-  printf(msg_get(LANG_DEFAULT, MSG_BOARD_TITLE_FMT), game->board_size,
-         game->board_size);
-  printf("\n");
-  for (row = 0; row < game->board_size; row++) {
-    for (col = 0; col < game->board_size; col++) {
-      int stone;
-      stone = game->board[row][col];
-      if (stone == STONE_BLACK)
-        printf("%s%c%s ", CFG_ANSI_COLOR_BRIGHT_BLUE, CFG_STONE_CHAR_BLACK,
-               CFG_ANSI_COLOR_RESET);
-      else if (stone == STONE_WHITE)
-        printf("%s%c%s ", CFG_ANSI_COLOR_BRIGHT_YELLOW, CFG_STONE_CHAR_WHITE,
-               CFG_ANSI_COLOR_RESET);
-      else
-        printf("%c ", CFG_STONE_CHAR_EMPTY);
-    }
-    printf("\n");
-  }
-}
-
-/**
- * @brief 顯示單行訊息。
- * @param message_key 訊息鍵值。
- */
-void ui_show_message(int message_key) {
-  printf("%s\n", msg_get(LANG_DEFAULT, message_key));
 }
 
 /**
@@ -234,14 +192,15 @@ void ui_render_full(const GomokuGame *game, const UIState *state, int lang) {
       stone = game->board[row][col];
 
       if (is_win) {
-        if (stone == STONE_BLACK)
-          APPEND("[%s%c%s]", CFG_ANSI_COLOR_BRIGHT_BLUE,
-                 CFG_STONE_CHAR_BLACK, CFG_ANSI_COLOR_RESET);
-        else if (stone == STONE_WHITE)
-          APPEND("[%s%c%s]", CFG_ANSI_COLOR_BRIGHT_YELLOW,
-                 CFG_STONE_CHAR_WHITE, CFG_ANSI_COLOR_RESET);
-        else
+        if (stone == STONE_BLACK) {
+          APPEND("[%s%c%s]", CFG_ANSI_COLOR_BRIGHT_BLUE, CFG_STONE_CHAR_BLACK,
+                 CFG_ANSI_COLOR_RESET);
+        } else if (stone == STONE_WHITE) {
+          APPEND("[%s%c%s]", CFG_ANSI_COLOR_BRIGHT_YELLOW, CFG_STONE_CHAR_WHITE,
+                 CFG_ANSI_COLOR_RESET);
+        } else {
           APPEND("[%c]", CFG_STONE_CHAR_WIN_FALLBACK);
+        }
       } else {
         if (is_cursor)
           APPEND("[");
@@ -249,23 +208,23 @@ void ui_render_full(const GomokuGame *game, const UIState *state, int lang) {
           APPEND(" ");
 
         if (is_last) {
-          if (stone == STONE_BLACK)
+          if (stone == STONE_BLACK) {
             APPEND("%s%c%s", CFG_ANSI_COLOR_BRIGHT_BLUE,
                    CFG_STONE_CHAR_BLACK_LAST, CFG_ANSI_COLOR_RESET);
-          else if (stone == STONE_WHITE)
+          } else if (stone == STONE_WHITE) {
             APPEND("%s%c%s", CFG_ANSI_COLOR_BRIGHT_YELLOW,
                    CFG_STONE_CHAR_WHITE_LAST, CFG_ANSI_COLOR_RESET);
-          else
+          } else {
             APPEND("%c", CFG_STONE_CHAR_EMPTY);
+          }
+        } else if (stone == STONE_BLACK) {
+          APPEND("%s%c%s", CFG_ANSI_COLOR_BRIGHT_BLUE, CFG_STONE_CHAR_BLACK,
+                 CFG_ANSI_COLOR_RESET);
+        } else if (stone == STONE_WHITE) {
+          APPEND("%s%c%s", CFG_ANSI_COLOR_BRIGHT_YELLOW, CFG_STONE_CHAR_WHITE,
+                 CFG_ANSI_COLOR_RESET);
         } else {
-          if (stone == STONE_BLACK)
-            APPEND("%s%c%s", CFG_ANSI_COLOR_BRIGHT_BLUE,
-                   CFG_STONE_CHAR_BLACK, CFG_ANSI_COLOR_RESET);
-          else if (stone == STONE_WHITE)
-            APPEND("%s%c%s", CFG_ANSI_COLOR_BRIGHT_YELLOW,
-                   CFG_STONE_CHAR_WHITE, CFG_ANSI_COLOR_RESET);
-          else
-            APPEND("%c", CFG_STONE_CHAR_EMPTY);
+          APPEND("%c", CFG_STONE_CHAR_EMPTY);
         }
 
         if (is_cursor)
@@ -353,26 +312,13 @@ void ui_hide_cursor(void) {
   SetConsoleCursorInfo(console, &info);
 }
 
-/**
- * @brief 顯示主控台游標。
- */
-void ui_show_cursor(void) {
-  HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
-  CONSOLE_CURSOR_INFO info;
-  if (console == INVALID_HANDLE_VALUE || console == 0)
-    return;
-  info.dwSize = 100;
-  info.bVisible = TRUE;
-  SetConsoleCursorInfo(console, &info);
-}
-
 static int ui_utf8_display_width(const char *text);
 static int ui_center_x_for_text(const char *text, int extra_width);
 
 /**
  * @brief 繪製選單標題 (ASCII Art GOMOKU)。
  */
-void ui_draw_menu_title(void) {
+void ui_draw_menu_title(int lang) {
   const char *subtitle;
 
   ui_set_color(CFG_COLOR_CYAN);
@@ -390,7 +336,7 @@ void ui_draw_menu_title(void) {
       "     [ \\______| \\______/  |__|  |__|  \\______/  |__|\\__\\  "
       "\\______/   ]");
 
-  subtitle = msg_get(LANG_DEFAULT, MSG_MENU_SUBTITLE);
+  subtitle = msg_get(lang, MSG_MENU_SUBTITLE);
   ui_set_color(CFG_COLOR_YELLOW);
   ui_gotoxy(ui_center_x_for_text(subtitle, 0), CFG_MENU_SUBTITLE_ROW);
   printf("%s", subtitle);

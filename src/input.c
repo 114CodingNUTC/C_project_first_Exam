@@ -125,7 +125,6 @@ static void input_append_char(UIState *ui_state, int key) {
   ui_state->input_cursor++;
   ui_state->input_length++;
   ui_state->input_text[ui_state->input_length] = '\0';
-  ui_state->board_dirty = 1;
 }
 
 /**
@@ -141,7 +140,6 @@ static void input_pop_char(UIState *ui_state) {
   ui_state->input_cursor--;
   ui_state->input_length--;
   ui_state->input_text[ui_state->input_length] = '\0';
-  ui_state->board_dirty = 1;
 }
 
 /**
@@ -156,7 +154,6 @@ static void input_delete_char(UIState *ui_state) {
           (size_t)(ui_state->input_length - ui_state->input_cursor - 1));
   ui_state->input_length--;
   ui_state->input_text[ui_state->input_length] = '\0';
-  ui_state->board_dirty = 1;
 }
 
 /**
@@ -164,10 +161,8 @@ static void input_delete_char(UIState *ui_state) {
  * @param ui_state 目前 UI 狀態。
  */
 static void input_move_left(UIState *ui_state) {
-  if (ui_state->input_cursor > 0) {
+  if (ui_state->input_cursor > 0)
     ui_state->input_cursor--;
-    ui_state->board_dirty = 1;
-  }
 }
 
 /**
@@ -175,10 +170,8 @@ static void input_move_left(UIState *ui_state) {
  * @param ui_state 目前 UI 狀態。
  */
 static void input_move_right(UIState *ui_state) {
-  if (ui_state->input_cursor < ui_state->input_length) {
+  if (ui_state->input_cursor < ui_state->input_length)
     ui_state->input_cursor++;
-    ui_state->board_dirty = 1;
-  }
 }
 
 /**
@@ -189,116 +182,75 @@ static void input_clear(UIState *ui_state) {
   ui_state->input_length = 0;
   ui_state->input_cursor = 0;
   ui_state->input_text[0] = '\0';
-  ui_state->board_dirty = 1;
 }
 
-/**
- * @brief 讀取單一數字選項並限制在範圍內。
- * @param min_value 可接受最小值。
- * @param max_value 可接受最大值。
- * @param lang 語系。
- * @return 使用者輸入且通過驗證的值。
- */
-static int read_number_in_range(int min_value, int max_value, int lang) {
+static int toggle_language(int lang) {
+  if (lang == LANG_EN_US)
+    return LANG_ZH_TW;
+  return LANG_EN_US;
+}
+
+static void draw_visual_menu(int lang, int current_selection, int option_count,
+                             const int *option_keys) {
+  const char *option_texts[8];
+  int i;
+
+  if (option_keys == 0 || option_count <= 0 || option_count > 8)
+    return;
+
+  for (i = 0; i < option_count; i++)
+    option_texts[i] = msg_get(lang, option_keys[i]);
+
+  system(CFG_CLEAR_SCREEN_CMD);
+  ui_hide_cursor();
+  ui_draw_menu_title(lang);
+  ui_draw_menu_options(current_selection, option_count, option_texts);
+  ui_draw_menu_hint(msg_get(lang, MSG_MENU_HINT));
+}
+
+static int run_visual_menu(int *lang, int option_count, const int *option_keys,
+                           int initial_selection) {
   int key;
-  int value;
+  int ext;
+  int current_selection;
+
+  if (lang == 0 || option_keys == 0 || option_count <= 0)
+    return -1;
+
+  current_selection = initial_selection;
+  if (current_selection < 0 || current_selection >= option_count)
+    current_selection = 0;
+
+  draw_visual_menu(*lang, current_selection, option_count, option_keys);
 
   while (1) {
-    key = _getch();
+    if (_kbhit()) {
+      key = _getch();
 
-    if (key == CFG_KEY_CTRL_C)
-      ExitProcess(0);
+      if (key == CFG_KEY_CTRL_C)
+        ExitProcess(0);
 
-    if (!isdigit((unsigned char)key))
-      continue;
-
-    value = key - '0';
-    if (value >= min_value && value <= max_value) {
-      printf("%d\n", value);
-      return value;
+      if (key == CFG_KEY_EXTENDED_0 || key == CFG_KEY_EXTENDED_224) {
+        ext = _getch();
+        if (ext == CFG_KEY_UP) {
+          current_selection =
+              current_selection > 0 ? current_selection - 1 : option_count - 1;
+          draw_visual_menu(*lang, current_selection, option_count, option_keys);
+        } else if (ext == CFG_KEY_DOWN) {
+          current_selection =
+              current_selection < option_count - 1 ? current_selection + 1 : 0;
+          draw_visual_menu(*lang, current_selection, option_count, option_keys);
+        }
+      } else if (key == 'l' || key == 'L') {
+        *lang = toggle_language(*lang);
+        draw_visual_menu(*lang, current_selection, option_count, option_keys);
+      } else if (key == CFG_KEY_ENTER) {
+        return current_selection;
+      }
     }
 
-    printf(msg_get(lang, MSG_INPUT_RANGE_HINT), min_value, max_value);
-    printf("\n");
-    printf("> ");
+    Sleep(50);
   }
-}
-
-/**
- * @brief 讀取遊戲模式選擇。
- * @param lang 語系。
- * @return 1-4 的模式代碼。
- */
-int input_choose_mode(int lang) {
-  printf("%s\n", msg_get(lang, MSG_MENU_MODE));
-  printf("1) %s\n", msg_get(lang, MSG_MODE_1V1));
-  printf("2) %s\n", msg_get(lang, MSG_MODE_1V_AI_EASY));
-  printf("3) %s\n", msg_get(lang, MSG_MODE_1V_AI_MEDIUM));
-  printf("4) %s\n", msg_get(lang, MSG_MODE_1V_AI_HARD));
-  printf("> ");
-  return read_number_in_range(1, 4, lang);
-}
-
-/**
- * @brief 讀取棋盤尺寸選擇。
- * @param lang 語系。
- * @return 對應的棋盤邊長常數。
- */
-int input_choose_board_size(int lang) {
-  printf("%s\n", msg_get(lang, MSG_MENU_BOARD));
-  printf("1) %s\n", msg_get(lang, MSG_BOARD_9X9));
-  printf("2) %s\n", msg_get(lang, MSG_BOARD_15X15));
-  printf("3) %s\n", msg_get(lang, MSG_BOARD_19X19));
-  printf("> ");
-
-  switch (read_number_in_range(1, 3, lang)) {
-  case 1:
-    return CFG_BOARD_SIZE_9;
-  case 2:
-    return CFG_BOARD_SIZE_15;
-  default:
-    return CFG_BOARD_SIZE_19;
-  }
-}
-
-/**
- * @brief 讀取 AI 先後手設定。
- * @param lang 語系。
- * @return CFG_AI_TURN_PLAYER_FIRST 或 CFG_AI_TURN_AI_FIRST。
- */
-int input_choose_ai_turn(int lang) {
-  printf("%s\n", msg_get(lang, MSG_MENU_AI_TURN));
-  printf("1) %s\n", msg_get(lang, MSG_AI_TURN_PLAYER_FIRST));
-  printf("2) %s\n", msg_get(lang, MSG_AI_TURN_AI_FIRST));
-  printf("> ");
-  return read_number_in_range(CFG_AI_TURN_PLAYER_FIRST, CFG_AI_TURN_AI_FIRST,
-                              lang);
-}
-
-/**
- * @brief 讀取暫停選單操作。
- * @param lang 語系。
- * @return 1-4 的暫停操作代碼。
- */
-int input_choose_pause_action(int lang) {
-  printf("\n%s\n", msg_get(lang, MSG_MENU_PAUSE));
-  printf("1) %s\n", msg_get(lang, MSG_PAUSE_CONTINUE));
-  printf("2) %s\n", msg_get(lang, MSG_PAUSE_RESTART));
-  printf("3) %s\n", msg_get(lang, MSG_PAUSE_MAIN_MENU));
-  printf("4) %s\n", msg_get(lang, MSG_PAUSE_EXIT));
-  printf("> ");
-  return read_number_in_range(1, 4, lang);
-}
-
-/**
- * @brief 讀取退出確認。
- * @param lang 語系。
- * @return 1 代表確認退出；0 代表取消。
- */
-int input_confirm_exit(int lang) {
-  printf("%s\n", msg_get(lang, MSG_CONFIRM_EXIT));
-  printf("> ");
-  return read_number_in_range(1, 2, lang) == 1;
 }
 
 /**
@@ -336,7 +288,7 @@ int input_read_player_move(const GomokuGame *game, UIState *ui_state,
           input_clear(ui_state);
           return PLAYER_ACTION_PLACE;
         }
-        now_ms = GetTickCount64();
+        now_ms = (long long)GetTickCount64();
         ui_set_message(ui_state, MSG_INVALID_INPUT, 1, now_ms,
                        CFG_MESSAGE_HOLD_MS);
         continue;
@@ -391,60 +343,20 @@ int input_read_player_move(const GomokuGame *game, UIState *ui_state,
  * @param lang 語系。
  * @return 1-4 的模式代碼。
  */
-int input_choose_mode_visual(int lang) {
-  int current_selection = 0;
-  int key;
-  int ext;
-  const char *mode_options[] = {
-      msg_get(lang, MSG_MODE_1V1), msg_get(lang, MSG_MODE_1V_AI_EASY),
-      msg_get(lang, MSG_MODE_1V_AI_MEDIUM), msg_get(lang, MSG_MODE_1V_AI_HARD)};
+int input_choose_mode_visual(int *lang) {
+  int local_lang;
+  int *active_lang;
+  int option_keys[4];
 
-  system(CFG_CLEAR_SCREEN_CMD);
-  ui_hide_cursor();
+  local_lang = LANG_DEFAULT;
+  active_lang = (lang != 0) ? lang : &local_lang;
 
-  /* 初始繪製菜單（只繪製一次） */
-  ui_draw_menu_title();
-  ui_draw_menu_options(current_selection, 4, mode_options);
-  ui_draw_menu_hint(msg_get(lang, MSG_MENU_HINT));
+  option_keys[0] = MSG_MODE_1V1;
+  option_keys[1] = MSG_MODE_1V_AI_EASY;
+  option_keys[2] = MSG_MODE_1V_AI_MEDIUM;
+  option_keys[3] = MSG_MODE_1V_AI_HARD;
 
-  while (1) {
-    if (_kbhit()) {
-      key = _getch();
-
-      if (key == CFG_KEY_CTRL_C)
-        ExitProcess(0);
-
-      if (key == CFG_KEY_EXTENDED_0 || key == CFG_KEY_EXTENDED_224) {
-        ext = _getch();
-        if (ext == CFG_KEY_UP)
-          current_selection = current_selection > 0 ? current_selection - 1 : 3;
-        if (ext == CFG_KEY_DOWN)
-          current_selection = current_selection < 3 ? current_selection + 1 : 0;
-
-        /* 只在獲得輸入時重繪 */
-        system(CFG_CLEAR_SCREEN_CMD);
-        ui_draw_menu_title();
-        ui_draw_menu_options(current_selection, 4, mode_options);
-        ui_draw_menu_hint(msg_get(lang, MSG_MENU_HINT));
-      } else if (key == 'w' || key == 'W') {
-        current_selection = 0;
-        system(CFG_CLEAR_SCREEN_CMD);
-        ui_draw_menu_title();
-        ui_draw_menu_options(current_selection, 4, mode_options);
-        ui_draw_menu_hint(msg_get(lang, MSG_MENU_HINT));
-      } else if (key == 's' || key == 'S') {
-        current_selection = 0;
-        system(CFG_CLEAR_SCREEN_CMD);
-        ui_draw_menu_title();
-        ui_draw_menu_options(current_selection, 4, mode_options);
-        ui_draw_menu_hint(msg_get(lang, MSG_MENU_HINT));
-      } else if (key == CFG_KEY_ENTER) {
-        return current_selection + 1;
-      }
-    }
-
-    Sleep(50);
-  }
+  return run_visual_menu(active_lang, 4, option_keys, 0) + 1;
 }
 
 /**
@@ -452,55 +364,25 @@ int input_choose_mode_visual(int lang) {
  * @param lang 語系。
  * @return 對應的棋盤邊長常數。
  */
-int input_choose_board_size_visual(int lang) {
-  int current_selection = 1;
-  int key;
-  int ext;
-  const char *size_options[] = {msg_get(lang, MSG_BOARD_9X9),
-                                msg_get(lang, MSG_BOARD_15X15),
-                                msg_get(lang, MSG_BOARD_19X19)};
+int input_choose_board_size_visual(int *lang) {
+  int local_lang;
+  int *active_lang;
+  int option_keys[3];
+  int choice;
 
-  system(CFG_CLEAR_SCREEN_CMD);
-  ui_hide_cursor();
+  local_lang = LANG_DEFAULT;
+  active_lang = (lang != 0) ? lang : &local_lang;
 
-  /* 初始繪製菜單（只繪製一次） */
-  ui_draw_menu_title();
-  ui_draw_menu_options(current_selection, 3, size_options);
-  ui_draw_menu_hint(msg_get(lang, MSG_MENU_HINT));
+  option_keys[0] = MSG_BOARD_9X9;
+  option_keys[1] = MSG_BOARD_15X15;
+  option_keys[2] = MSG_BOARD_19X19;
 
-  while (1) {
-    if (_kbhit()) {
-      key = _getch();
-
-      if (key == CFG_KEY_CTRL_C)
-        ExitProcess(0);
-
-      if (key == CFG_KEY_EXTENDED_0 || key == CFG_KEY_EXTENDED_224) {
-        ext = _getch();
-        if (ext == CFG_KEY_UP)
-          current_selection = current_selection > 0 ? current_selection - 1 : 2;
-        if (ext == CFG_KEY_DOWN)
-          current_selection = current_selection < 2 ? current_selection + 1 : 0;
-
-        /* 只在獲得輸入時重繪 */
-        system(CFG_CLEAR_SCREEN_CMD);
-        ui_draw_menu_title();
-        ui_draw_menu_options(current_selection, 3, size_options);
-        ui_draw_menu_hint(msg_get(lang, MSG_MENU_HINT));
-      } else if (key == CFG_KEY_ENTER) {
-        switch (current_selection) {
-        case 0:
-          return CFG_BOARD_SIZE_9;
-        case 1:
-          return CFG_BOARD_SIZE_15;
-        default:
-          return CFG_BOARD_SIZE_19;
-        }
-      }
-    }
-
-    Sleep(50);
-  }
+  choice = run_visual_menu(active_lang, 3, option_keys, 1);
+  if (choice == 0)
+    return CFG_BOARD_SIZE_9;
+  if (choice == 1)
+    return CFG_BOARD_SIZE_15;
+  return CFG_BOARD_SIZE_19;
 }
 
 /**
@@ -508,46 +390,50 @@ int input_choose_board_size_visual(int lang) {
  * @param lang 語系。
  * @return CFG_AI_TURN_PLAYER_FIRST 或 CFG_AI_TURN_AI_FIRST。
  */
-int input_choose_ai_turn_visual(int lang) {
-  int current_selection = 0;
-  int key;
-  int ext;
-  const char *turn_options[] = {msg_get(lang, MSG_AI_TURN_PLAYER_FIRST),
-                                msg_get(lang, MSG_AI_TURN_AI_FIRST)};
+int input_choose_ai_turn_visual(int *lang) {
+  int local_lang;
+  int *active_lang;
+  int option_keys[2];
+  int choice;
 
-  system(CFG_CLEAR_SCREEN_CMD);
-  ui_hide_cursor();
+  local_lang = LANG_DEFAULT;
+  active_lang = (lang != 0) ? lang : &local_lang;
 
-  /* 初始繪製菜單（只繪製一次） */
-  ui_draw_menu_title();
-  ui_draw_menu_options(current_selection, 2, turn_options);
-  ui_draw_menu_hint(msg_get(lang, MSG_MENU_HINT));
+  option_keys[0] = MSG_AI_TURN_PLAYER_FIRST;
+  option_keys[1] = MSG_AI_TURN_AI_FIRST;
 
-  while (1) {
-    if (_kbhit()) {
-      key = _getch();
+  choice = run_visual_menu(active_lang, 2, option_keys, 0);
+  return choice == 0 ? CFG_AI_TURN_PLAYER_FIRST : CFG_AI_TURN_AI_FIRST;
+}
 
-      if (key == CFG_KEY_CTRL_C)
-        ExitProcess(0);
+int input_choose_pause_action_visual(int *lang) {
+  int local_lang;
+  int *active_lang;
+  int option_keys[4];
 
-      if (key == CFG_KEY_EXTENDED_0 || key == CFG_KEY_EXTENDED_224) {
-        ext = _getch();
-        if (ext == CFG_KEY_UP)
-          current_selection = current_selection > 0 ? current_selection - 1 : 1;
-        if (ext == CFG_KEY_DOWN)
-          current_selection = current_selection < 1 ? current_selection + 1 : 0;
+  local_lang = LANG_DEFAULT;
+  active_lang = (lang != 0) ? lang : &local_lang;
 
-        /* 只在獲得輸入時重繪 */
-        system(CFG_CLEAR_SCREEN_CMD);
-        ui_draw_menu_title();
-        ui_draw_menu_options(current_selection, 2, turn_options);
-        ui_draw_menu_hint(msg_get(lang, MSG_MENU_HINT));
-      } else if (key == CFG_KEY_ENTER) {
-        return current_selection == 0 ? CFG_AI_TURN_PLAYER_FIRST
-                                      : CFG_AI_TURN_AI_FIRST;
-      }
-    }
+  option_keys[0] = MSG_PAUSE_CONTINUE;
+  option_keys[1] = MSG_PAUSE_RESTART;
+  option_keys[2] = MSG_PAUSE_MAIN_MENU;
+  option_keys[3] = MSG_PAUSE_EXIT;
 
-    Sleep(50);
-  }
+  return run_visual_menu(active_lang, 4, option_keys, 0) + 1;
+}
+
+int input_confirm_exit_visual(int *lang) {
+  int local_lang;
+  int *active_lang;
+  int option_keys[2];
+  int choice;
+
+  local_lang = LANG_DEFAULT;
+  active_lang = (lang != 0) ? lang : &local_lang;
+
+  option_keys[0] = MSG_OPTION_YES;
+  option_keys[1] = MSG_OPTION_NO;
+
+  choice = run_visual_menu(active_lang, 2, option_keys, 1);
+  return choice == 0;
 }

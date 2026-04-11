@@ -1,39 +1,22 @@
-#include "../include/config.h"
+﻿#include "../include/config.h"
 #include "../include/functions.h"
 #include <stdlib.h>
 
-static int has_adjacent_stone(const GomokuGame *game, int row, int col,
-                              int range) {
-  int r;
-  int c;
-  int r_start;
-  int r_end;
-  int c_start;
-  int c_end;
+/*
+ * ai_easy.c - 簡單 AI 演算法說明
+ *
+ * 策略流程（由高到低優先級）：
+ * 1) 先找自己立即致勝點。
+ * 2) 再找對手立即致勝點並阻擋。
+ * 3) 嘗試把己方三連延伸成四連（進攻壓力）。
+ * 4) 阻擋對手把三連延伸成四連（防守底線）。
+ * 5) 若無強制手，對合法空位做輕量評分：鄰近同色、鄰近敵色、中心偏好。
+ * 6) 從前 K 個高分點隨機選擇，保留簡單難度的可預測性與變化性。
+ */
 
-  r_start = row - range;
-  if (r_start < 0)
-    r_start = 0;
-  r_end = row + range;
-  if (r_end >= game->board_size)
-    r_end = game->board_size - 1;
-
-  c_start = col - range;
-  if (c_start < 0)
-    c_start = 0;
-  c_end = col + range;
-  if (c_end >= game->board_size)
-    c_end = game->board_size - 1;
-
-  for (r = r_start; r <= r_end; r++) {
-    for (c = c_start; c <= c_end; c++)
-      if (game->board[r][c] != STONE_EMPTY)
-        return 1;
-  }
-
-  return 0;
-}
-
+/**
+ * @brief 計算目標空位 8 鄰域內指定顏色棋子的數量。
+ */
 static int count_adjacent_color(const GomokuGame *game, int row, int col,
                                 int player) {
   int dirs[8][2];
@@ -70,135 +53,8 @@ static int count_adjacent_color(const GomokuGame *game, int row, int col,
   return count;
 }
 
-static int count_line(const GomokuGame *game, int row, int col, int player,
-                      int dr, int dc) {
-  int count;
-  int r;
-  int c;
-
-  count = 0;
-  r = row + dr;
-  c = col + dc;
-  while (board_is_in_bounds(game, r, c) && game->board[r][c] == player) {
-    count++;
-    r += dr;
-    c += dc;
-  }
-
-  return count;
-}
-
-static int find_immediate_win_for_player(const GomokuGame *game, int player,
-                                         int *out_row, int *out_col) {
-  int row;
-  int col;
-  int out_count;
-  int out_line[CFG_WIN_STREAK][2];
-  GomokuGame temp;
-
-  for (row = 0; row < game->board_size; row++) {
-    for (col = 0; col < game->board_size; col++) {
-      if (!board_is_empty(game, row, col))
-        continue;
-
-      temp = *game;
-      board_place_stone(&temp, player, row, col);
-      if (rules_check_win(&temp, row, col, player, out_line, &out_count)) {
-        *out_row = row;
-        *out_col = col;
-        return 1;
-      }
-    }
-  }
-
-  return 0;
-}
-
-static int find_block_four_threat_move(const GomokuGame *game, int opponent,
-                                       int *out_row, int *out_col) {
-  int row;
-  int col;
-  int i;
-  int len;
-  int dirs[4][2];
-  GomokuGame temp;
-
-  dirs[0][0] = 0;
-  dirs[0][1] = 1;
-  dirs[1][0] = 1;
-  dirs[1][1] = 0;
-  dirs[2][0] = 1;
-  dirs[2][1] = 1;
-  dirs[3][0] = 1;
-  dirs[3][1] = -1;
-
-  for (row = 0; row < game->board_size; row++) {
-    for (col = 0; col < game->board_size; col++) {
-      if (!board_is_empty(game, row, col))
-        continue;
-
-      temp = *game;
-      board_place_stone(&temp, opponent, row, col);
-
-      for (i = 0; i < 4; i++) {
-        len = 1 +
-              count_line(&temp, row, col, opponent, dirs[i][0], dirs[i][1]) +
-              count_line(&temp, row, col, opponent, -dirs[i][0], -dirs[i][1]);
-        if (len >= CFG_WIN_STREAK - 1) {
-          *out_row = row;
-          *out_col = col;
-          return 1;
-        }
-      }
-    }
-  }
-
-  return 0;
-}
-
-static int find_extend_three_move(const GomokuGame *game, int player,
-                                  int *out_row, int *out_col) {
-  int row;
-  int col;
-  int i;
-  int len;
-  int dirs[4][2];
-  GomokuGame temp;
-
-  dirs[0][0] = 0;
-  dirs[0][1] = 1;
-  dirs[1][0] = 1;
-  dirs[1][1] = 0;
-  dirs[2][0] = 1;
-  dirs[2][1] = 1;
-  dirs[3][0] = 1;
-  dirs[3][1] = -1;
-
-  for (row = 0; row < game->board_size; row++) {
-    for (col = 0; col < game->board_size; col++) {
-      if (!board_is_empty(game, row, col))
-        continue;
-
-      temp = *game;
-      board_place_stone(&temp, player, row, col);
-
-      for (i = 0; i < 4; i++) {
-        len = 1 + count_line(&temp, row, col, player, dirs[i][0], dirs[i][1]) +
-              count_line(&temp, row, col, player, -dirs[i][0], -dirs[i][1]);
-        if (len == CFG_WIN_STREAK - 1) {
-          *out_row = row;
-          *out_col = col;
-          return 1;
-        }
-      }
-    }
-  }
-
-  return 0;
-}
-
 /**
- * @brief 簡單 AI：優化随機選擇，優先靠近棋子或中心區域。
+ * @brief 簡單 AI：優化隨機選擇，優先靠近棋子或中心區域。
  * @param game 當前遊戲狀態。
  * @param out_row 輸出列索引。
  * @param out_col 輸出行索引。
@@ -219,20 +75,8 @@ int ai_easy_pick_move(const GomokuGame *game, int *out_row, int *out_col) {
   if (game == 0 || out_row == 0 || out_col == 0)
     return 0;
 
-  if (find_immediate_win_for_player(game, game->current_player, out_row,
-                                    out_col)) {
-    return 1;
-  }
-
   opponent = (game->current_player == STONE_BLACK) ? STONE_WHITE : STONE_BLACK;
-
-  if (find_immediate_win_for_player(game, opponent, out_row, out_col))
-    return 1;
-
-  if (find_extend_three_move(game, game->current_player, out_row, out_col))
-    return 1;
-
-  if (find_block_four_threat_move(game, opponent, out_row, out_col))
+  if (ai_try_forced_or_tactical_move(game, out_row, out_col))
     return 1;
 
   center = game->board_size / 2;
@@ -244,7 +88,7 @@ int ai_easy_pick_move(const GomokuGame *game, int *out_row, int *out_col) {
         continue;
 
       if (game->move_count > 0 &&
-          !has_adjacent_stone(game, row, col, CFG_AI_EASY_NEAR_RANGE)) {
+          !ai_has_near_stone(game, row, col, CFG_AI_EASY_NEAR_RANGE)) {
         continue;
       }
 

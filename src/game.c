@@ -12,7 +12,7 @@
  * @brief 取得目前毫秒時間戳。
  * @return 從系統啟動至今的毫秒數。
  */
-static long long now_ms(void) { return GetTickCount64(); }
+static long long now_ms(void) { return (long long)GetTickCount64(); }
 
 /**
  * @brief 依照模式選擇對應 AI 並計算下一手。
@@ -293,7 +293,8 @@ int game_run_loop(int mode, int board_size, int ai_turn_choice, int lang) {
         continue;
       }
 
-      ui_set_message(&ui_state, end_message_key, 0, now_ms(), CFG_MESSAGE_HOLD_MS);
+      ui_set_message(&ui_state, end_message_key, 0, now_ms(),
+                     CFG_MESSAGE_HOLD_MS);
       ui_render_full(&game, &ui_state, lang);
       printf("%s\n", msg_get(lang, MSG_PRESS_ANY_KEY_BACK_MENU));
       _getch();
@@ -303,7 +304,7 @@ int game_run_loop(int mode, int board_size, int ai_turn_choice, int lang) {
     }
 
     if (state == GS_PAUSED) {
-      pause_action = input_choose_pause_action(lang);
+      pause_action = input_choose_pause_action_visual(&lang);
       if (pause_action == 1) {
         state = GS_IN_GAME;
         ui_set_message(&ui_state, MSG_MOVE_HINT, 0, now_ms(),
@@ -326,7 +327,7 @@ int game_run_loop(int mode, int board_size, int ai_turn_choice, int lang) {
     }
 
     if (state == GS_CONFIRM_EXIT) {
-      if (input_confirm_exit(lang)) {
+      if (input_confirm_exit_visual(&lang)) {
         trace_event(lang, EV_EXIT_APP);
         return GAME_LOOP_EXIT_APP;
       }

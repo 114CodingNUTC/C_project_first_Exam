@@ -36,19 +36,21 @@ int main(void) {
   int board_size;
   int ai_turn_choice;
   int loop_result;
+  int lang;
 
   setup_console_codepage();
 
+  lang = LANG_DEFAULT;
   while (1) {
     system(CFG_CLEAR_SCREEN_CMD);
 
-    mode = input_choose_mode_visual(LANG_DEFAULT);
-    board_size = input_choose_board_size_visual(LANG_DEFAULT);
+    mode = input_choose_mode_visual(&lang);
+    board_size = input_choose_board_size_visual(&lang);
     ai_turn_choice = CFG_AI_TURN_PLAYER_FIRST;
     if (mode != 1)
-      ai_turn_choice = input_choose_ai_turn_visual(LANG_DEFAULT);
+      ai_turn_choice = input_choose_ai_turn_visual(&lang);
 
-    loop_result = game_run_loop(mode, board_size, ai_turn_choice, LANG_DEFAULT);
+    loop_result = game_run_loop(mode, board_size, ai_turn_choice, lang);
     if (loop_result == GAME_LOOP_EXIT_APP)
       break;
   }

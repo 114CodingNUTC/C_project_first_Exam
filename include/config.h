@@ -12,18 +12,13 @@
 #define CFG_MESSAGE_HOLD_MS 0x7D0
 #define CFG_INPUT_BUFFER_SIZE 32
 
-#define CFG_MESSAGE_SLOT_HEIGHT 3
-#define CFG_MIN_DISPLAY_HEIGHT 3
 #define CFG_CLEAR_SCREEN_CMD "cls"
 
 #define CFG_CONSOLE_CODEPAGE_UTF8 0xFDE9
 
-#define CURSOR_HIDDEN 0
-#define CURSOR_VISIBLE 1
 #define CFG_CONSOLE_OUTPUT_CODEPAGE CFG_CONSOLE_CODEPAGE_UTF8
 #define CFG_CONSOLE_INPUT_CODEPAGE CFG_CONSOLE_CODEPAGE_UTF8
 
-#define CFG_ANSI_CLEAR_AND_HOME "\x1b[3J\x1b[2J\x1b[H"
 #define CFG_ANSI_COLOR_RED "\x1b[31m"
 #define CFG_ANSI_COLOR_BRIGHT_BLUE "\x1b[94m"
 #define CFG_ANSI_COLOR_BRIGHT_YELLOW "\x1b[93m"
@@ -41,10 +36,7 @@
 #define CFG_MENU_TITLE_ROW 2
 #define CFG_MENU_SUBTITLE_ROW 9
 #define CFG_MENU_OPTION1_ROW 13
-#define CFG_MENU_OPTION2_ROW 15
 #define CFG_MENU_HINT_ROW 20
-#define CFG_MENU_OPTION_COL 30
-#define CFG_MENU_HINT_COL 17
 
 #define LANG_ZH_TW 0
 #define LANG_EN_US 1
@@ -125,7 +117,6 @@ typedef struct UIState {
   int message_key;
   long long message_display_end_ms;
   int message_is_error;
-  int board_dirty;
   char input_text[CFG_INPUT_BUFFER_SIZE];
   int input_length;
   int input_cursor;

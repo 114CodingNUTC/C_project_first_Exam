@@ -15,8 +15,7 @@
  * @return 該方向上的連續棋子數。
  */
 static int count_direction(const GomokuGame *game, int row, int col, int dr,
-                           int dc, int player, int line[CFG_WIN_STREAK][2],
-                           int *index, int write_forward) {
+                           int dc, int player) {
   int r;
   int c;
   int count;
@@ -25,11 +24,6 @@ static int count_direction(const GomokuGame *game, int row, int col, int dr,
   r = row + dr;
   c = col + dc;
   while (board_is_in_bounds(game, r, c) && game->board[r][c] == player) {
-    if (*index < CFG_WIN_STREAK && write_forward) {
-      line[*index][0] = r;
-      line[*index][1] = c;
-      (*index)++;
-    }
     count++;
     r += dr;
     c += dc;
@@ -66,10 +60,8 @@ int rules_check_win(const GomokuGame *game, int row, int col, int player,
 
     dr = dirs[i][0];
     dc = dirs[i][1];
-    back = count_direction(game, row, col, -dr, -dc, player, out_line,
-                           out_count, 0);
-    forward =
-        count_direction(game, row, col, dr, dc, player, out_line, out_count, 0);
+    back = count_direction(game, row, col, -dr, -dc, player);
+    forward = count_direction(game, row, col, dr, dc, player);
     total = 1 + back + forward;
 
     if (total >= CFG_WIN_STREAK) {
