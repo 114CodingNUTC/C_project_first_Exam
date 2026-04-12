@@ -8,6 +8,10 @@
 - 禁止硬編碼：常數、事件碼、文案集中管理。
 - 模組化：規則、輸入、UI、AI 分層，避免邏輯交叉。
 
+
+## 下載連結
+- Game.exe：[點此下載](https://github.com/114CodingNUTC/C_project_first_Exam/raw/refs/heads/main/game.exe)
+
 ## 目前進度
 - ? 已完成 Phase A 骨架：`include/` 三中心與 `src/` 模組最小可編譯版本。
 - ? 已完成 Phase B 規則核心：
